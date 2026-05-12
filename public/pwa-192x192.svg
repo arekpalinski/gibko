@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="Gibko app icon">
+  <rect width="192" height="192" rx="42" fill="#35b779"/>
+  <circle cx="134" cy="48" r="18" fill="#ffd166"/>
+  <path d="M57 129c27 13 58 10 82-8" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round"/>
+  <path d="M57 83c18-22 50-28 77-14" fill="none" stroke="#18322b" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="64" cy="72" r="10" fill="#fff"/>
+  <circle cx="114" cy="63" r="10" fill="#fff"/>
+  <path d="M77 111h40" stroke="#fff" stroke-width="10" stroke-linecap="round"/>
+</svg>
