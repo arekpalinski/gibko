@@ -7,7 +7,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  Flame,
   Footprints,
   Home,
   Languages,
@@ -44,10 +43,16 @@ type BeforeInstallPromptEvent = Event & {
 }
 
 const assetPath = (fileName: string) => `${import.meta.env.BASE_URL}assets/${fileName}`
-const GIBKO_LOGO_SRC = assetPath('gibko-logo.webp')
-const GIBKO_MASCOT_SRC = assetPath('gibko-mascot-stretch.webp')
-const GIBKO_HELLO_SRC = assetPath('gibko-hello.webp')
+const GIBKO_LOGO_SRC = assetPath('gibko-logo-transparent.webp')
+const GIBKO_MASCOT_SRC = assetPath('gibko-mascot-stretch-transparent.webp')
+const GIBKO_HELLO_SRC = assetPath('gibko-hello-transparent.webp')
+const GIBKO_PROFILE_AVATAR_SRC = assetPath('gibko-profile-avatar.webp')
+const MISSION_COMPLETED_IMAGES = [
+  assetPath('gibko-mission-completed-1.webp'),
+  assetPath('gibko-mission-completed-2.webp'),
+]
 const CHAPTER_TARGET_MISSIONS = 12
+const COMPLETION_IMAGE_STORAGE_KEY = 'gibko-completion-image-index'
 
 export function App() {
   const [progress, setProgressState] = useState(loadProgress)
@@ -127,6 +132,7 @@ function Onboarding({
 }) {
   const [step, setStep] = useState<'intro' | 'setup'>('intro')
   const [name, setName] = useState(progress.childName)
+  const navigate = useNavigate()
 
   return (
     <div className="app-shell">
@@ -176,13 +182,14 @@ function Onboarding({
             <button
               className="primary-action wide"
               disabled={!name.trim()}
-              onClick={() =>
+              onClick={() => {
+                navigate('/')
                 setProgress({
                   ...progress,
                   childName: name.trim(),
                   acceptedSafety: true,
                 })
-              }
+              }}
               type="button"
             >
               {translate('onboarding.next')}
@@ -275,7 +282,7 @@ function MapScreen({
         <Link className="round-button" to="/">
           <ChevronLeft />
         </Link>
-        <h1>{translate('map.title')}</h1>
+        <span className="map-screen-label">{translate('nav.map')}</span>
         <div className="xp-chip">
           <Star size={16} />
           {progress.xp}
@@ -348,6 +355,7 @@ function MissionScreen({
   const [startedExerciseIds, setStartedExerciseIds] = useState<string[]>([])
   const [skipHint, setSkipHint] = useState(false)
   const [earnedBadgeIds, setEarnedBadgeIds] = useState<string[]>([])
+  const [completionImageIndex, setCompletionImageIndex] = useState(0)
   const [missionDone, setMissionDone] = useState(false)
 
   if (!mission) {
@@ -378,6 +386,7 @@ function MissionScreen({
     }
 
     const result = completeMission(progress, mission)
+    setCompletionImageIndex(getNextCompletionImageIndex())
     setProgress(result.progress)
     setEarnedBadgeIds(result.earnedBadgeIds)
     setMissionDone(true)
@@ -391,7 +400,14 @@ function MissionScreen({
   }
 
   if (missionDone) {
-    return <Summary mission={mission} earnedBadgeIds={earnedBadgeIds} translate={translate} />
+    return (
+      <Summary
+        completionImageIndex={completionImageIndex}
+        earnedBadgeIds={earnedBadgeIds}
+        mission={mission}
+        translate={translate}
+      />
+    )
   }
 
   return (
@@ -438,19 +454,22 @@ function MissionScreen({
 }
 
 function Summary({
+  completionImageIndex,
   earnedBadgeIds,
   mission,
   translate,
 }: {
+  completionImageIndex: number
   earnedBadgeIds: string[]
   mission: Mission
   translate: (key: string, values?: Record<string, string | number>) => string
 }) {
   const earnedBadges = badges.filter((badge) => earnedBadgeIds.includes(badge.id))
+  const imageSrc = MISSION_COMPLETED_IMAGES[completionImageIndex % MISSION_COMPLETED_IMAGES.length]
 
   return (
     <Screen className="centered">
-      <img className="summary-mascot" src={GIBKO_MASCOT_SRC} alt="Gibko stretching" />
+      <img className="summary-mascot" src={imageSrc} alt="Gibko celebrating mission completion" />
       <h1>{translate('summary.title')}</h1>
       <p>{translate('summary.body')}</p>
       <strong className="summary-xp">
@@ -464,6 +483,13 @@ function Summary({
       </Link>
     </Screen>
   )
+}
+
+function getNextCompletionImageIndex() {
+  const lastIndex = Number(localStorage.getItem(COMPLETION_IMAGE_STORAGE_KEY) ?? '1')
+  const nextIndex = lastIndex === 0 ? 1 : 0
+  localStorage.setItem(COMPLETION_IMAGE_STORAGE_KEY, String(nextIndex))
+  return nextIndex
 }
 
 function ProfileScreen({
@@ -486,7 +512,7 @@ function ProfileScreen({
         </Link>
       </header>
 
-      <img className="profile-mascot" src={GIBKO_MASCOT_SRC} alt="Gibko stretching" />
+      <img className="profile-mascot" src={GIBKO_PROFILE_AVATAR_SRC} alt="Gibko profile avatar" />
       <h2 className="profile-name">{progress.childName}</h2>
       <div className="level-pill">{translate('profile.level', { level })}</div>
 
@@ -621,9 +647,9 @@ function StatsRow({
 }) {
   return (
     <section className={`stats-row ${compact ? 'compact' : ''}`}>
-      <StatCard icon={<Star />} label={translate('stats.xp')} tone="cyan" value={progress.xp} />
-      <StatCard icon={<Flame />} label={translate('stats.streak')} tone="pink" value={progress.streakDays} />
-      <StatCard icon={<Clock />} label={translate('stats.minutesToday')} tone="gold" value={progress.exerciseMinutesToday} />
+      <StatCard icon="⭐" label={translate('stats.xp')} tone="cyan" value={progress.xp} />
+      <StatCard icon="🔥" label={translate('stats.streak')} tone="pink" value={progress.streakDays} />
+      <StatCard icon="🕘" label={translate('stats.minutesToday')} tone="gold" value={progress.exerciseMinutesToday} />
     </section>
   )
 }
@@ -641,7 +667,7 @@ function StatCard({
 }) {
   return (
     <article className={`stat-card ${tone}`}>
-      {icon}
+      <span className="stat-emoji">{icon}</span>
       <span>{label}</span>
       <strong>{value}</strong>
     </article>

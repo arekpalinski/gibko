@@ -12,7 +12,7 @@ export const messages: Record<Locale, Messages> = {
     'onboarding.title': 'Cześć!',
     'onboarding.subtitle': 'Nazywam się Gibko i pomogę Ci stać się bardziej gibkim!',
     'onboarding.nameTitle': 'Zacznijmy!',
-    'onboarding.nameSubtitle': 'Jak mamy się do Ciebie zwracać?',
+    'onboarding.nameSubtitle': 'Jak mam się do Ciebie zwracać?',
     'onboarding.nameLabel': 'Twoje imię',
     'onboarding.namePlaceholder': 'np. Ola',
     'onboarding.language': 'Wybierz język:',

@@ -75,7 +75,7 @@ a {
 
 .screen {
   display: grid;
-  gap: 22px;
+  gap: 20px;
   height: 100%;
   overflow-y: auto;
   padding: 28px 22px 96px;
@@ -132,6 +132,12 @@ p {
   align-items: center;
   display: flex;
   justify-content: space-between;
+}
+
+.map-screen-label {
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 900;
 }
 
 .center-title-row {
@@ -414,7 +420,7 @@ input:focus {
   align-items: center;
   display: grid;
   gap: 16px;
-  grid-template-columns: 1fr 118px;
+  grid-template-columns: 1fr 144px;
 }
 
 .home-hero p {
@@ -423,12 +429,11 @@ input:focus {
 
 .hello-mascot {
   aspect-ratio: 1;
-  background: rgba(0, 0, 0, 0.16);
   border-radius: 26px;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   overflow: hidden;
-  width: 118px;
+  width: 144px;
 }
 
 .stats-row {
@@ -460,11 +465,16 @@ input:focus {
   min-height: 98px;
 }
 
-.stat-card svg {
-  fill: currentColor;
+.stat-emoji {
+  align-items: center;
+  display: grid;
+  font-size: 1.9rem;
+  line-height: 1;
+  min-height: 36px;
+  place-items: center;
 }
 
-.stat-card span {
+.stat-card > span:not(.stat-emoji) {
   color: var(--gold);
   font-size: 0.72rem;
   font-weight: 950;
@@ -504,9 +514,10 @@ input:focus {
   align-items: center;
   display: grid;
   gap: 10px;
-  grid-template-columns: 1fr 132px;
+  grid-template-columns: 1fr 150px;
+  min-height: 186px;
   overflow: hidden;
-  padding: 18px 0 18px 18px;
+  padding: 18px 16px 18px 18px;
 }
 
 .mission-card h2 {
@@ -519,10 +530,11 @@ input:focus {
 }
 
 .mission-mascot {
+  align-self: end;
   filter: drop-shadow(0 16px 24px rgba(0, 0, 0, 0.36));
-  margin-right: -22px;
+  justify-self: center;
   object-fit: contain;
-  width: 162px;
+  width: 134px;
 }
 
 .mission-meta {
@@ -833,9 +845,9 @@ input:focus {
 }
 
 .summary-mascot {
-  height: 180px;
+  height: clamp(220px, 58vw, 310px);
   object-fit: contain;
-  width: 180px;
+  width: clamp(220px, 58vw, 310px);
 }
 
 .summary-xp {
@@ -1045,10 +1057,18 @@ input:focus {
   }
 
   .mission-card {
-    grid-template-columns: 1fr 110px;
+    grid-template-columns: 1fr 126px;
   }
 
   .mission-mascot {
-    width: 136px;
+    width: 120px;
+  }
+
+  .home-hero {
+    grid-template-columns: 1fr 118px;
+  }
+
+  .hello-mascot {
+    width: 118px;
   }
 }

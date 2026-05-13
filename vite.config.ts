@@ -8,7 +8,15 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'assets/gibko-logo.webp', 'assets/gibko-mascot-stretch.webp', 'assets/gibko-hello.webp'],
+      includeAssets: [
+        'favicon.svg',
+        'assets/gibko-logo-transparent.webp',
+        'assets/gibko-mascot-stretch-transparent.webp',
+        'assets/gibko-hello-transparent.webp',
+        'assets/gibko-profile-avatar.webp',
+        'assets/gibko-mission-completed-1.webp',
+        'assets/gibko-mission-completed-2.webp',
+      ],
       manifest: {
         name: 'Gibko',
         short_name: 'Gibko',
