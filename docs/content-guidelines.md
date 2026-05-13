@@ -10,7 +10,7 @@ Exercise names should be playful, memorable, and related to the movement. Instru
 
 Good style:
 
-- "Reach up slowly like a rocket before launch."
+- "Reach up slowly like Gibko pointing at a high branch."
 - "Lean gently. No yanking."
 - "Stop if something hurts."
 

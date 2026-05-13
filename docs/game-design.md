@@ -15,22 +15,22 @@ Gibko should mix silly, motivating, and occasionally educational language. The a
 
 - XP after every mission.
 - Badges for milestone and bonus achievements.
-- Future versions may add collectibles, avatar accessories, or world items.
+- Future versions may add collectibles, avatar accessories, or forest items.
 
-## First World
+## First Chapter
 
-Name: Cosmic Movement Academy
+Name: Rainforest
 
 Prototype missions:
 
-- Launch Pad Warmup
-- Zero Gravity Training
-- Comet Trail
+- Canopy Warmup
+- Rainy Branches
+- Vine Path
 
 Example exercise naming style:
 
-- Rocket Start
-- Radar Arms
-- Orbital Bend
-- Cosmic Cat
-- Astronaut Walk
+- Branch Reach
+- Leafy Arms
+- Vine Side Bend
+- Rain Frog
+- River Steps

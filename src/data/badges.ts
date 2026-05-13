@@ -2,15 +2,15 @@ import type { Badge } from '../types'
 
 export const badges: Badge[] = [
   {
-    id: 'cosmic-rookie',
-    titleKey: 'badges.cosmicRookie.title',
-    descriptionKey: 'badges.cosmicRookie.description',
-    icon: 'sparkles',
+    id: 'rainforest-scout',
+    titleKey: 'badges.rainforestScout.title',
+    descriptionKey: 'badges.rainforestScout.description',
+    icon: 'gibbon',
   },
   {
-    id: 'morning-comet',
-    titleKey: 'badges.morningComet.title',
-    descriptionKey: 'badges.morningComet.description',
+    id: 'morning-leaf',
+    titleKey: 'badges.morningLeaf.title',
+    descriptionKey: 'badges.morningLeaf.description',
     icon: 'sun',
   },
   {
@@ -20,9 +20,9 @@ export const badges: Badge[] = [
     icon: 'calendar',
   },
   {
-    id: 'weekend-orbit',
-    titleKey: 'badges.weekendOrbit.title',
-    descriptionKey: 'badges.weekendOrbit.description',
+    id: 'weekend-grove',
+    titleKey: 'badges.weekendGrove.title',
+    descriptionKey: 'badges.weekendGrove.description',
     icon: 'weekend',
   },
 ]

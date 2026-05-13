@@ -5,7 +5,7 @@
 - PWA shell.
 - Local profile.
 - Local progress.
-- First world with three missions.
+- First rainforest chapter with three missions.
 - XP, streak, badges.
 - Basic install prompt.
 - Minimal progress tests.
@@ -14,17 +14,17 @@
 
 - Review real stretching exercises.
 - Create a safer progression model.
-- Add more missions to the first world.
+- Add more missions to the first chapter.
 - Add clearer exercise illustrations or animations.
 
 ## Phase 3: More Game Feel
 
 - Add collectibles.
-- Add richer world completion moments.
+- Add richer chapter completion moments.
 - Add daily mission variety.
 - Add optional sound and motion settings.
 
-## Phase 4: More Worlds
+## Phase 4: More Chapters
 
-- Add the second world with a different theme.
-- Keep world data compatible with the first world model.
+- Add the second forest chapter with a different theme.
+- Keep chapter data compatible with the first chapter model.

@@ -1,9 +1,9 @@
-import { worlds } from '../data/worlds'
+import { chapters } from '../data/chapters'
 import type { Locale, Mission, MissionResult, Progress } from '../types'
 
 const STORAGE_KEY = 'gibko-progress-v1'
 
-export const firstMissionId = worlds[0]?.missions[0]?.id ?? ''
+export const firstMissionId = chapters[0]?.missions[0]?.id ?? ''
 
 export function createInitialProgress(locale: Locale = 'pl'): Progress {
   return {
@@ -13,6 +13,7 @@ export function createInitialProgress(locale: Locale = 'pl'): Progress {
     streakDays: 0,
     lastActiveDate: null,
     exerciseMinutesToday: 0,
+    totalExerciseMinutes: 0,
     completedMissionIds: [],
     unlockedMissionIds: firstMissionId ? [firstMissionId] : [],
     badgeIds: [],
@@ -27,7 +28,7 @@ export function loadProgress(): Progress {
   }
 
   try {
-    return { ...createInitialProgress(), ...JSON.parse(raw) } as Progress
+    return normalizeProgress({ ...createInitialProgress(), ...JSON.parse(raw) } as Progress)
   } catch {
     return createInitialProgress()
   }
@@ -87,6 +88,7 @@ export function completeMission(
         progress.lastActiveDate === today
           ? progress.exerciseMinutesToday + mission.estimatedMinutes
           : mission.estimatedMinutes,
+      totalExerciseMinutes: progress.totalExerciseMinutes + mission.estimatedMinutes,
       completedMissionIds,
       unlockedMissionIds,
       badgeIds,
@@ -95,7 +97,7 @@ export function completeMission(
 }
 
 function unlockNextMission(unlockedMissionIds: string[], missionId: string) {
-  const allMissions = worlds.flatMap((world) => world.missions)
+  const allMissions = chapters.flatMap((chapter) => chapter.missions)
   const currentIndex = allMissions.findIndex((mission) => mission.id === missionId)
   const nextMission = allMissions[currentIndex + 1]
 
@@ -110,28 +112,39 @@ function getEarnedBadges(progress: Progress, mission: Mission, now: Date) {
   const earned: string[] = []
   const hour = now.getHours()
   const day = now.getDay()
-  const world = worlds.find((candidate) => candidate.id === mission.worldId)
-  const worldCompleted =
-    world?.missions.every((candidate) => progress.completedMissionIds.includes(candidate.id)) ??
+  const chapter = chapters.find((candidate) => candidate.id === mission.chapterId)
+  const chapterCompleted =
+    chapter?.missions.every((candidate) => progress.completedMissionIds.includes(candidate.id)) ??
     false
 
-  if (worldCompleted && world && !progress.badgeIds.includes(world.badgeId)) {
-    earned.push(world.badgeId)
+  if (chapterCompleted && chapter && !progress.badgeIds.includes(chapter.badgeId)) {
+    earned.push(chapter.badgeId)
   }
 
-  if (hour < 10 && !progress.badgeIds.includes('morning-comet')) {
-    earned.push('morning-comet')
+  if (hour < 10 && !progress.badgeIds.includes('morning-leaf')) {
+    earned.push('morning-leaf')
   }
 
   if (progress.streakDays >= 3 && !progress.badgeIds.includes('streak-3')) {
     earned.push('streak-3')
   }
 
-  if ((day === 0 || day === 6) && !progress.badgeIds.includes('weekend-orbit')) {
-    earned.push('weekend-orbit')
+  if ((day === 0 || day === 6) && !progress.badgeIds.includes('weekend-grove')) {
+    earned.push('weekend-grove')
   }
 
   return earned
+}
+
+function normalizeProgress(progress: Progress): Progress {
+  if (!firstMissionId || progress.unlockedMissionIds.includes(firstMissionId)) {
+    return progress
+  }
+
+  return {
+    ...progress,
+    unlockedMissionIds: [firstMissionId, ...progress.unlockedMissionIds],
+  }
 }
 
 function toDateKey(date: Date) {

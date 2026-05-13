@@ -4,13 +4,13 @@ export type Exercise = {
   id: string
   titleKey: string
   descriptionKey: string
-  icon: 'rocket' | 'radar' | 'orbit' | 'cat' | 'astronaut'
+  icon: 'branch' | 'leaf' | 'vine' | 'frog' | 'river'
   minutes: number
 }
 
 export type Mission = {
   id: string
-  worldId: string
+  chapterId: string
   titleKey: string
   teaserKey: string
   xp: number
@@ -18,7 +18,7 @@ export type Mission = {
   exercises: Exercise[]
 }
 
-export type World = {
+export type Chapter = {
   id: string
   titleKey: string
   descriptionKey: string
@@ -30,7 +30,7 @@ export type Badge = {
   id: string
   titleKey: string
   descriptionKey: string
-  icon: 'sparkles' | 'sun' | 'calendar' | 'weekend'
+  icon: 'gibbon' | 'leaf' | 'sun' | 'calendar' | 'weekend'
 }
 
 export type Progress = {
@@ -40,6 +40,7 @@ export type Progress = {
   streakDays: number
   lastActiveDate: string | null
   exerciseMinutesToday: number
+  totalExerciseMinutes: number
   completedMissionIds: string[]
   unlockedMissionIds: string[]
   badgeIds: string[]

@@ -8,13 +8,13 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.svg', 'assets/gibko-logo.webp', 'assets/gibko-mascot-stretch.webp', 'assets/gibko-hello.webp'],
       manifest: {
         name: 'Gibko',
         short_name: 'Gibko',
-        description: 'A playful stretching mission app for kids.',
-        theme_color: '#35b779',
-        background_color: '#f7fff8',
+        description: 'A playful stretching mission app for kids with Gibko the gibbon.',
+        theme_color: '#020f21',
+        background_color: '#020f21',
         display: 'standalone',
         lang: 'pl',
         orientation: 'portrait',
@@ -36,7 +36,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,json}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,json}'],
       },
     }),
   ],

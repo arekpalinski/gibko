@@ -2,7 +2,7 @@
 
 ## Vision
 
-Gibko helps kids build a light stretching habit through playful missions. It should feel closer to a small mobile game than to a workout checklist.
+Gibko helps kids build a light stretching habit through playful missions with Gibko, a friendly gibbon mascot. It should feel closer to a small mobile game than to a workout checklist.
 
 ## Audience
 
@@ -21,13 +21,13 @@ Gibko helps kids build a light stretching habit through playful missions. It sho
 
 ## Content Model
 
-- World: a themed stage such as Cosmic Movement Academy.
+- Chapter: a themed forest area such as Rainforest.
 - Mission: a 10-15 minute session made of several exercises.
 - Exercise: one simple movement with a playful name and short instruction.
-- Badge: a reward for world completion or special behavior.
+- Badge: a reward for chapter completion or special behavior.
 
-Future worlds should contain around 10-30 missions each.
+Future chapters should contain around 10-30 missions each.
 
 ## Prototype Scope
 
-The first prototype includes one world with three missions. The exercise content is intentionally lightweight and should be refined later with more care.
+The first prototype includes one rainforest chapter with three missions. The exercise content is intentionally lightweight and should be refined later with more care.

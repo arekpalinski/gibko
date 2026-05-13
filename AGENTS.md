@@ -2,7 +2,7 @@
 
 ## Project
 
-Gibko is a playful Progressive Web App for kids around age 10. It encourages gentle stretching through short missions, XP, streaks, badges, and unlockable worlds. The first prototype world is the Cosmic Movement Academy.
+Gibko is a playful Progressive Web App for kids around age 10. It encourages gentle stretching through short missions, XP, streaks, badges, and unlockable forest chapters. The main character is Gibko, a friendly gibbon. The first prototype chapter is the Rainforest.
 
 ## Language Rules
 
@@ -31,7 +31,7 @@ Gibko is a playful Progressive Web App for kids around age 10. It encourages gen
 ## Technical Direction
 
 - Use Vite, React, TypeScript, and plain CSS.
-- Keep game content data-driven so future worlds can be added without rewriting app flow.
+- Keep game content data-driven so future chapters and forests can be added without rewriting app flow.
 - Prefer small, focused modules.
 - Use `localStorage` for prototype progress.
 - Keep GitHub Pages compatibility. The Vite base path is `/gibko/`.
@@ -47,7 +47,7 @@ Gibko is a playful Progressive Web App for kids around age 10. It encourages gen
 
 - Onboarding with child name, language, and safety note.
 - Home screen with XP, streak, minutes today, install prompt, and daily mission.
-- World map with the first three missions.
+- Chapter map with the first three missions.
 - Mission flow with manual Start, Done, and Too hard actions.
 - Mission summary with XP and badges.
 - Profile and settings.
