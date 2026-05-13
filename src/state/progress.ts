@@ -12,8 +12,8 @@ export function createInitialProgress(locale: Locale = 'pl'): Progress {
     xp: 0,
     streakDays: 0,
     lastActiveDate: null,
-    exerciseMinutesToday: 0,
-    totalExerciseMinutes: 0,
+    exerciseSecondsToday: 0,
+    totalExerciseSeconds: 0,
     completedMissionIds: [],
     unlockedMissionIds: firstMissionId ? [firstMissionId] : [],
     badgeIds: [],
@@ -28,7 +28,8 @@ export function loadProgress(): Progress {
   }
 
   try {
-    return normalizeProgress({ ...createInitialProgress(), ...JSON.parse(raw) } as Progress)
+    const parsed = JSON.parse(raw) as Partial<Progress>
+    return normalizeProgress({ ...createInitialProgress(parsed.locale), ...parsed } as Progress)
   } catch {
     return createInitialProgress()
   }
@@ -53,6 +54,7 @@ export function isMissionCompleted(progress: Progress, missionId: string) {
 export function completeMission(
   progress: Progress,
   mission: Mission,
+  actualSeconds = mission.estimatedMinutes * 60,
   now = new Date(),
 ): MissionResult {
   const today = toDateKey(now)
@@ -84,11 +86,11 @@ export function completeMission(
       xp: progress.xp + mission.xp,
       streakDays,
       lastActiveDate: today,
-      exerciseMinutesToday:
+      exerciseSecondsToday:
         progress.lastActiveDate === today
-          ? progress.exerciseMinutesToday + mission.estimatedMinutes
-          : mission.estimatedMinutes,
-      totalExerciseMinutes: progress.totalExerciseMinutes + mission.estimatedMinutes,
+          ? progress.exerciseSecondsToday + actualSeconds
+          : actualSeconds,
+      totalExerciseSeconds: progress.totalExerciseSeconds + actualSeconds,
       completedMissionIds,
       unlockedMissionIds,
       badgeIds,

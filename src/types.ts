@@ -39,8 +39,8 @@ export type Progress = {
   xp: number
   streakDays: number
   lastActiveDate: string | null
-  exerciseMinutesToday: number
-  totalExerciseMinutes: number
+  exerciseSecondsToday: number
+  totalExerciseSeconds: number
   completedMissionIds: string[]
   unlockedMissionIds: string[]
   badgeIds: string[]

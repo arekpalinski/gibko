@@ -511,7 +511,7 @@ input:focus {
 }
 
 .mission-card {
-  align-items: center;
+  align-items: stretch;
   display: grid;
   gap: 10px;
   grid-template-columns: 1fr 150px;
@@ -530,11 +530,12 @@ input:focus {
 }
 
 .mission-mascot {
-  align-self: end;
+  align-self: center;
   filter: drop-shadow(0 16px 24px rgba(0, 0, 0, 0.36));
   justify-self: center;
   object-fit: contain;
-  width: 134px;
+  transform: translateY(-8px);
+  width: 156px;
 }
 
 .mission-meta {
@@ -829,6 +830,33 @@ input:focus {
   font-size: 2rem;
 }
 
+.exercise-timer,
+.summary-time {
+  align-items: center;
+  background: rgba(22, 214, 194, 0.1);
+  border: 1px solid rgba(22, 214, 194, 0.25);
+  border-radius: 18px;
+  color: var(--cyan);
+  display: inline-grid;
+  gap: 4px;
+  justify-items: center;
+  min-width: 152px;
+  padding: 12px 16px;
+}
+
+.exercise-timer span,
+.summary-time span {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.exercise-timer strong,
+.summary-time strong {
+  font-size: 1.7rem;
+  font-weight: 950;
+}
+
 .exercise-actions {
   display: flex;
   flex-wrap: wrap;
@@ -853,6 +881,16 @@ input:focus {
 .summary-xp {
   color: var(--cyan);
   font-size: 1.25rem;
+}
+
+.summary-time {
+  grid-template-columns: auto 1fr auto;
+  justify-items: start;
+  min-width: min(100%, 250px);
+}
+
+.summary-time strong {
+  font-size: 1.2rem;
 }
 
 .profile-mascot {
@@ -1061,7 +1099,8 @@ input:focus {
   }
 
   .mission-mascot {
-    width: 120px;
+    transform: translateY(-6px);
+    width: 132px;
   }
 
   .home-hero {

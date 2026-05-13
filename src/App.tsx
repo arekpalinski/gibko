@@ -356,7 +356,22 @@ function MissionScreen({
   const [skipHint, setSkipHint] = useState(false)
   const [earnedBadgeIds, setEarnedBadgeIds] = useState<string[]>([])
   const [completionImageIndex, setCompletionImageIndex] = useState(0)
+  const [activeExerciseStartedAt, setActiveExerciseStartedAt] = useState<number | null>(null)
+  const [elapsedSeconds, setElapsedSeconds] = useState(0)
+  const [missionSeconds, setMissionSeconds] = useState(0)
   const [missionDone, setMissionDone] = useState(false)
+
+  useEffect(() => {
+    if (!activeExerciseStartedAt) {
+      return
+    }
+
+    const intervalId = window.setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - activeExerciseStartedAt) / 1000))
+    }, 250)
+
+    return () => window.clearInterval(intervalId)
+  }, [activeExerciseStartedAt])
 
   if (!mission) {
     return null
@@ -376,16 +391,35 @@ function MissionScreen({
 
   const exercise = mission.exercises[exerciseIndex]
   const isLastExercise = exerciseIndex === mission.exercises.length - 1
-  const started = startedExerciseIds.includes(exercise.id)
+  const started = activeExerciseStartedAt !== null || startedExerciseIds.includes(exercise.id)
+
+  const startExercise = () => {
+    if (activeExerciseStartedAt) {
+      return
+    }
+
+    setSkipHint(false)
+    setElapsedSeconds(0)
+    setActiveExerciseStartedAt(Date.now())
+    setStartedExerciseIds([...new Set([...startedExerciseIds, exercise.id])])
+  }
 
   const finishExercise = () => {
     setSkipHint(false)
+    const exerciseSeconds = activeExerciseStartedAt
+      ? Math.max(1, Math.round((Date.now() - activeExerciseStartedAt) / 1000))
+      : 0
+    const nextMissionSeconds = missionSeconds + exerciseSeconds
+    setActiveExerciseStartedAt(null)
+    setElapsedSeconds(0)
+    setMissionSeconds(nextMissionSeconds)
+
     if (!isLastExercise) {
       setExerciseIndex(exerciseIndex + 1)
       return
     }
 
-    const result = completeMission(progress, mission)
+    const result = completeMission(progress, mission, nextMissionSeconds)
     setCompletionImageIndex(getNextCompletionImageIndex())
     setProgress(result.progress)
     setEarnedBadgeIds(result.earnedBadgeIds)
@@ -404,6 +438,7 @@ function MissionScreen({
       <Summary
         completionImageIndex={completionImageIndex}
         earnedBadgeIds={earnedBadgeIds}
+        missionSeconds={missionSeconds}
         mission={mission}
         translate={translate}
       />
@@ -429,10 +464,16 @@ function MissionScreen({
         <h2>{translate(exercise.titleKey)}</h2>
         <p>{translate(exercise.descriptionKey)}</p>
 
+        <div className="exercise-timer" aria-live="polite">
+          <span>{translate('exercise.timer')}</span>
+          <strong>{formatDuration(elapsedSeconds)}</strong>
+        </div>
+
         <div className="exercise-actions">
           <button
             className="secondary-action"
-            onClick={() => setStartedExerciseIds([...new Set([...startedExerciseIds, exercise.id])])}
+            disabled={activeExerciseStartedAt !== null}
+            onClick={startExercise}
             type="button"
           >
             <Clock size={18} />
@@ -456,11 +497,13 @@ function MissionScreen({
 function Summary({
   completionImageIndex,
   earnedBadgeIds,
+  missionSeconds,
   mission,
   translate,
 }: {
   completionImageIndex: number
   earnedBadgeIds: string[]
+  missionSeconds: number
   mission: Mission
   translate: (key: string, values?: Record<string, string | number>) => string
 }) {
@@ -475,6 +518,11 @@ function Summary({
       <strong className="summary-xp">
         {translate('summary.earned')} {translate('mission.xp', { xp: mission.xp })}
       </strong>
+      <div className="summary-time">
+        <Clock size={18} />
+        <span>{translate('summary.time')}</span>
+        <strong>{formatDuration(missionSeconds)}</strong>
+      </div>
       {earnedBadges.map((badge) => (
         <BadgePill badge={badge} key={badge.id} translate={translate} />
       ))}
@@ -490,6 +538,14 @@ function getNextCompletionImageIndex() {
   const nextIndex = lastIndex === 0 ? 1 : 0
   localStorage.setItem(COMPLETION_IMAGE_STORAGE_KEY, String(nextIndex))
   return nextIndex
+}
+
+function formatDuration(totalSeconds: number) {
+  const safeSeconds = Math.max(0, Math.round(totalSeconds))
+  const minutes = Math.floor(safeSeconds / 60)
+  const seconds = safeSeconds % 60
+
+  return `${minutes}:${String(seconds).padStart(2, '0')}`
 }
 
 function ProfileScreen({
@@ -523,7 +579,7 @@ function ProfileScreen({
             <Clock size={18} />
             {translate('stats.totalMinutes')}
           </span>
-          <strong>{progress.totalExerciseMinutes}</strong>
+          <strong>{formatDuration(progress.totalExerciseSeconds)}</strong>
         </div>
       </section>
 
@@ -649,7 +705,7 @@ function StatsRow({
     <section className={`stats-row ${compact ? 'compact' : ''}`}>
       <StatCard icon="⭐" label={translate('stats.xp')} tone="cyan" value={progress.xp} />
       <StatCard icon="🔥" label={translate('stats.streak')} tone="pink" value={progress.streakDays} />
-      <StatCard icon="🕘" label={translate('stats.minutesToday')} tone="gold" value={progress.exerciseMinutesToday} />
+      <StatCard icon="🕘" label={translate('stats.minutesToday')} tone="gold" value={formatDuration(progress.exerciseSecondsToday)} />
     </section>
   )
 }
@@ -663,7 +719,7 @@ function StatCard({
   icon: ReactNode
   label: string
   tone: 'cyan' | 'gold' | 'pink'
-  value: number
+  value: number | string
 }) {
   return (
     <article className={`stat-card ${tone}`}>
