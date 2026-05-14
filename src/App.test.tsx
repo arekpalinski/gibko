@@ -1,0 +1,41 @@
+import '@testing-library/jest-dom/vitest'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { App } from './App'
+import { chapters } from './data/chapters'
+import { createInitialProgress, saveProgress } from './state/progress'
+
+describe('mission flow', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  it('opens the next adventure at its first exercise from the completion screen', async () => {
+    const firstMission = chapters[0].missions[0]
+    const secondMission = chapters[0].missions[1]
+    const progress = {
+      ...createInitialProgress('en'),
+      acceptedSafety: true,
+      childName: 'Alex',
+    }
+    saveProgress(progress)
+
+    render(
+      <MemoryRouter initialEntries={[`/mission/${firstMission.id}`]}>
+        <App />
+      </MemoryRouter>,
+    )
+
+    for (let index = 0; index < firstMission.exercises.length; index += 1) {
+      fireEvent.click(await screen.findByRole('button', { name: 'Start' }))
+      fireEvent.click(await screen.findByRole('button', { name: 'Done' }))
+    }
+
+    fireEvent.click(await screen.findByRole('link', { name: 'Next adventure' }))
+
+    expect(await screen.findByRole('heading', { name: secondMission.title.en })).toBeInTheDocument()
+    expect(screen.getByText(`1 / ${secondMission.exercises.length}`)).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Adventure complete!' })).not.toBeInTheDocument()
+  })
+})

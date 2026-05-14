@@ -248,8 +248,8 @@ function HomeScreen({
   progress: Progress
   translate: (key: string, values?: Record<string, string | number>) => string
 }) {
-  const dailyMission = useMemo(
-    () => chapters[0].missions.find((mission) => isMissionUnlocked(progress, mission.id)) ?? chapters[0].missions[0],
+  const nextAdventure = useMemo(
+    () => findNextAdventure(progress) ?? findFirstUnlockedAdventure(progress) ?? chapters[0].missions[0],
     [progress],
   )
 
@@ -280,10 +280,10 @@ function HomeScreen({
       <section className="mission-card">
         <div className="mission-card-copy">
           <p className="eyebrow">{translate('home.dailyMission')}</p>
-          <h2>{localize(progress.locale, dailyMission.title)}</h2>
-          <MissionMeta locale={progress.locale} mission={dailyMission} translate={translate} />
-          <Link className="primary-action" to={`/mission/${dailyMission.id}`}>
-            {isMissionCompleted(progress, dailyMission.id)
+          <h2>{localize(progress.locale, nextAdventure.title)}</h2>
+          <MissionMeta locale={progress.locale} mission={nextAdventure} translate={translate} />
+          <Link className="primary-action" to={`/mission/${nextAdventure.id}`}>
+            {isMissionCompleted(progress, nextAdventure.id)
               ? translate('mission.repeat')
               : translate('mission.start')}
             <ChevronRight size={20} />
@@ -409,10 +409,26 @@ function MissionScreen({
   const [earnedBadgeIds, setEarnedBadgeIds] = useState<string[]>([])
   const [starsEarned, setStarsEarned] = useState(1)
   const [completionImageIndex, setCompletionImageIndex] = useState(0)
+  const [nextAdventureId, setNextAdventureId] = useState<string | null>(null)
   const [activeExerciseStartedAt, setActiveExerciseStartedAt] = useState<number | null>(null)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [missionSeconds, setMissionSeconds] = useState(0)
   const [missionDone, setMissionDone] = useState(false)
+
+  useEffect(() => {
+    setExerciseIndex(0)
+    setStartedExerciseIds([])
+    setDifficultyHelpExerciseIds([])
+    setSkipHint(false)
+    setEarnedBadgeIds([])
+    setStarsEarned(1)
+    setCompletionImageIndex(0)
+    setNextAdventureId(null)
+    setActiveExerciseStartedAt(null)
+    setElapsedSeconds(0)
+    setMissionSeconds(0)
+    setMissionDone(false)
+  }, [missionId])
 
   useEffect(() => {
     if (!activeExerciseStartedAt) {
@@ -484,6 +500,7 @@ function MissionScreen({
     setProgress(result.progress)
     setEarnedBadgeIds(result.earnedBadgeIds)
     setStarsEarned(result.starsEarned)
+    setNextAdventureId(findNextAdventure(result.progress)?.id ?? null)
     setMissionDone(true)
   }
 
@@ -502,6 +519,7 @@ function MissionScreen({
         earnedBadgeIds={earnedBadgeIds}
         missionSeconds={missionSeconds}
         mission={mission}
+        nextAdventureId={nextAdventureId}
         starsEarned={starsEarned}
         translate={translate}
       />
@@ -590,6 +608,7 @@ function Summary({
   earnedBadgeIds,
   missionSeconds,
   mission,
+  nextAdventureId,
   starsEarned,
   translate,
 }: {
@@ -597,6 +616,7 @@ function Summary({
   earnedBadgeIds: string[]
   missionSeconds: number
   mission: Mission
+  nextAdventureId: string | null
   starsEarned: number
   translate: (key: string, values?: Record<string, string | number>) => string
 }) {
@@ -622,11 +642,29 @@ function Summary({
       {earnedBadges.map((badge) => (
         <BadgePill badge={badge} key={badge.id} translate={translate} />
       ))}
-      <Link className="primary-action wide" to="/">
+      {nextAdventureId && (
+        <Link className="primary-action wide" to={`/mission/${nextAdventureId}`}>
+          {translate('summary.nextAdventure')}
+          <ChevronRight size={20} />
+        </Link>
+      )}
+      <Link className={`${nextAdventureId ? 'secondary-action' : 'primary-action'} wide`} to="/">
         {translate('summary.backHome')}
       </Link>
     </Screen>
   )
+}
+
+function findNextAdventure(progress: Progress) {
+  return chapters
+    .flatMap((chapter) => chapter.missions)
+    .find((mission) => isMissionUnlocked(progress, mission.id) && !isMissionCompleted(progress, mission.id))
+}
+
+function findFirstUnlockedAdventure(progress: Progress) {
+  return chapters
+    .flatMap((chapter) => chapter.missions)
+    .find((mission) => isMissionUnlocked(progress, mission.id))
 }
 
 function getNextCompletionImageIndex() {
@@ -804,7 +842,7 @@ function StatsRow({
   return (
     <section className={`stats-row ${compact ? 'compact' : ''}`}>
       <StatCard icon="⭐" label={translate('stats.xp')} tone="cyan" value={progress.xp} />
-      <StatCard icon="🔥" label={translate('stats.streak')} tone="pink" value={progress.streakDays} />
+      <StatCard icon={<Footprints />} label={translate('stats.streak')} tone="pink" value={progress.streakDays} />
       <StatCard icon="🕘" label={translate('stats.minutesToday')} tone="gold" value={formatDuration(progress.exerciseSecondsToday)} />
     </section>
   )
