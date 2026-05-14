@@ -536,6 +536,11 @@ input:focus {
   color: var(--gold);
 }
 
+.stat-card.green,
+.stat-card.green strong {
+  color: var(--green);
+}
+
 .mission-card,
 .profile-stats-card,
 .exercise-card,
@@ -591,8 +596,8 @@ input:focus {
 }
 
 .mission-meta span:nth-child(2) {
-  border-color: rgba(255, 188, 54, 0.32);
-  color: var(--gold);
+  border-color: rgba(101, 213, 91, 0.34);
+  color: var(--green);
 }
 
 .xp-chip {
@@ -609,7 +614,7 @@ input:focus {
 .chapter-heading strong svg,
 .node-stars svg,
 .summary-stars svg {
-  color: var(--gold);
+  color: var(--green);
   fill: currentColor;
 }
 
@@ -831,7 +836,7 @@ input:focus {
 }
 
 .node-stars strong {
-  color: var(--cyan);
+  color: var(--green);
   font-size: 0.8rem;
 }
 
@@ -1175,7 +1180,7 @@ input:focus {
 }
 
 .summary-xp {
-  color: var(--cyan);
+  color: var(--green);
   font-size: 1.25rem;
 }
 
@@ -1199,28 +1204,73 @@ input:focus {
   font-size: 1.2rem;
 }
 
+.profile-screen {
+  gap: 10px;
+  padding-top: 18px;
+}
+
+.profile-top-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: -6px;
+  min-height: 42px;
+}
+
 .profile-mascot {
-  height: 168px;
+  height: 138px;
   justify-self: center;
+  margin-bottom: -4px;
   object-fit: contain;
-  width: 168px;
+  width: 138px;
 }
 
 .profile-name {
-  font-size: 2rem;
+  font-size: 1.72rem;
   justify-self: center;
+  line-height: 1.08;
 }
 
 .level-pill {
-  background: var(--purple);
+  background: linear-gradient(135deg, var(--green), var(--cyan));
   border-radius: 999px;
   font-weight: 950;
   justify-self: center;
-  padding: 8px 18px;
+  padding: 7px 16px;
+}
+
+.explorer-title-label {
+  color: var(--green);
+  font-size: 0.72rem;
+  font-weight: 950;
+  justify-self: center;
+  margin-bottom: -8px;
+  text-transform: uppercase;
+}
+
+.title-progress-hint {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.86rem;
+  line-height: 1.35;
+  justify-self: center;
+  max-width: 300px;
+  text-align: center;
 }
 
 .profile-stats-card {
-  padding: 12px 16px 16px;
+  padding: 8px 14px 12px;
+}
+
+.profile-stats-card .stats-row.compact .stat-card {
+  min-height: 78px;
+  padding: 8px 6px;
+}
+
+.profile-stats-card .stat-emoji {
+  min-height: 28px;
+}
+
+.profile-stats-card .stat-card strong {
+  font-size: 1.45rem;
 }
 
 .total-minutes {
@@ -1228,7 +1278,7 @@ input:focus {
   border-top: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
-  padding-top: 16px;
+  padding-top: 12px;
 }
 
 .total-minutes span {

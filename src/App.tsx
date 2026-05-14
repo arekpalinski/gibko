@@ -15,7 +15,6 @@ import {
   RotateCcw,
   Settings,
   ShieldCheck,
-  Star,
   Sun,
   TreePine,
   User,
@@ -52,6 +51,19 @@ const MISSION_COMPLETED_IMAGES = [
   assetPath('gibko-mission-completed-2.webp'),
 ]
 const COMPLETION_IMAGE_STORAGE_KEY = 'gibko-completion-image-index'
+const EXPLORER_TITLE_STEP = 1000
+const EXPLORER_TITLES: LocalizedText[] = [
+  { pl: 'Mały Listek', en: 'Little Leaf' },
+  { pl: 'Zwinna Gałązka', en: 'Nimble Twig' },
+  { pl: 'Leśny Tropiciel', en: 'Forest Tracker' },
+  { pl: 'Przyjaciel Lian', en: 'Vine Friend' },
+  { pl: 'Strażnik Polany', en: 'Clearing Guardian' },
+  { pl: 'Wędrowiec Wodospadu', en: 'Waterfall Wanderer' },
+  { pl: 'Odkrywca Koron Drzew', en: 'Canopy Explorer' },
+  { pl: 'Mistrz Leśnego Rytmu', en: 'Forest Rhythm Master' },
+  { pl: 'Strażnik Wielkiego Lasu', en: 'Great Forest Guardian' },
+  { pl: 'Legenda Koron Drzew', en: 'Canopy Legend' },
+]
 
 export function App() {
   const [progress, setProgressState] = useState(loadProgress)
@@ -333,7 +345,7 @@ function MapScreen({
         </Link>
         <span className="map-screen-label">{translate('nav.map')}</span>
         <div className="xp-chip">
-          <Star size={16} />
+          <Leaf size={16} />
           {progress.xp}
         </div>
       </header>
@@ -348,7 +360,7 @@ function MapScreen({
             completed: completedCount,
             total: chapter.missions.length,
           })}
-          <Star size={16} />
+          <Leaf size={16} />
         </strong>
       </section>
 
@@ -632,7 +644,7 @@ function Summary({
         {translate('summary.earned')} {translate('mission.xp', { xp: mission.xp })}
       </strong>
       <div className="summary-stars" aria-label={translate('summary.stars', { stars: starsEarned })}>
-        <StarRating stars={starsEarned} />
+        <LeafRating leaves={starsEarned} />
       </div>
       <div className="summary-time">
         <Clock size={18} />
@@ -686,6 +698,20 @@ function localize(locale: Progress['locale'], value: LocalizedText) {
   return value[locale] ?? value.en
 }
 
+export function getExplorerTitleProgress(xp: number) {
+  const safeXp = Math.max(0, xp)
+  const level = Math.min(EXPLORER_TITLES.length, Math.floor(safeXp / EXPLORER_TITLE_STEP) + 1)
+  const nextTitle = EXPLORER_TITLES[level] ?? null
+  const pointsToNextTitle = nextTitle ? level * EXPLORER_TITLE_STEP - safeXp : 0
+
+  return {
+    level,
+    title: EXPLORER_TITLES[level - 1],
+    nextTitle,
+    pointsToNextTitle,
+  }
+}
+
 function ProfileScreen({
   progress,
   translate,
@@ -694,13 +720,11 @@ function ProfileScreen({
   translate: (key: string, values?: Record<string, string | number>) => string
 }) {
   const earnedBadges = badges.filter((badge) => progress.badgeIds.includes(badge.id))
-  const level = Math.max(1, Math.floor(progress.xp / 100) + 1)
+  const explorerTitle = getExplorerTitleProgress(progress.xp)
 
   return (
-    <Screen>
-      <header className="center-title-row">
-        <span />
-        <h1>{translate('profile.title')}</h1>
+    <Screen className="profile-screen">
+      <header className="profile-top-row" aria-label={translate('profile.title')}>
         <Link className="ghost-icon" to="/settings">
           <Settings />
         </Link>
@@ -708,7 +732,16 @@ function ProfileScreen({
 
       <img className="profile-mascot" src={GIBKO_PROFILE_AVATAR_SRC} alt="Gibko profile avatar" />
       <h2 className="profile-name">{progress.childName}</h2>
-      <div className="level-pill">{translate('profile.level', { level })}</div>
+      <div className="explorer-title-label">{translate('profile.titleLabel')}</div>
+      <div className="level-pill">{localize(progress.locale, explorerTitle.title)}</div>
+      <p className="title-progress-hint">
+        {explorerTitle.nextTitle
+          ? translate('profile.nextTitleHint', {
+              points: explorerTitle.pointsToNextTitle,
+              title: localize(progress.locale, explorerTitle.nextTitle),
+            })
+          : translate('profile.maxTitleHint')}
+      </p>
 
       <section className="profile-stats-card">
         <StatsRow compact progress={progress} translate={translate} />
@@ -841,7 +874,7 @@ function StatsRow({
 }) {
   return (
     <section className={`stats-row ${compact ? 'compact' : ''}`}>
-      <StatCard icon="⭐" label={translate('stats.xp')} tone="cyan" value={progress.xp} />
+      <StatCard icon={<Leaf />} label={translate('stats.xp')} tone="green" value={progress.xp} />
       <StatCard icon={<Footprints />} label={translate('stats.streak')} tone="pink" value={progress.streakDays} />
       <StatCard icon="🕘" label={translate('stats.minutesToday')} tone="gold" value={formatDuration(progress.exerciseSecondsToday)} />
     </section>
@@ -856,7 +889,7 @@ function StatCard({
 }: {
   icon: ReactNode
   label: string
-  tone: 'cyan' | 'gold' | 'pink'
+  tone: 'cyan' | 'gold' | 'green' | 'pink'
   value: number | string
 }) {
   return (
@@ -1038,7 +1071,7 @@ function MapNode({
       </div>
       <div className="node-stars">
         {completed ? (
-          <StarRating stars={stars} />
+          <LeafRating leaves={stars} />
         ) : isCurrent ? (
           <strong>{translate('mission.startLabel')}</strong>
         ) : null}
@@ -1059,11 +1092,11 @@ function MapNode({
   )
 }
 
-function StarRating({ stars }: { stars: number }) {
+function LeafRating({ leaves }: { leaves: number }) {
   return (
     <>
-      {Array.from({ length: Math.max(1, Math.min(3, stars)) }, (_, index) => (
-        <Star key={index} />
+      {Array.from({ length: Math.max(1, Math.min(3, leaves)) }, (_, index) => (
+        <Leaf key={index} />
       ))}
     </>
   )
