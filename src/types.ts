@@ -46,6 +46,7 @@ export type Mission = {
   equipment: Equipment[]
   xp: number
   estimatedMinutes: number
+  durationLabel: LocalizedText
   exercises: Exercise[]
 }
 

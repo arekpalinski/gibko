@@ -134,23 +134,15 @@ describe('progress logic', () => {
 
   it('awards the chapter badge when all missions in the chapter are complete', () => {
     const chapter = chapters[0]
-    const firstResult = completeMission(
-      createInitialProgress(),
-      chapter.missions[0],
-      120,
-      new Date('2026-05-12T12:00:00'),
-    )
-    const secondResult = completeMission(
-      firstResult.progress,
-      chapter.missions[1],
-      120,
-      new Date('2026-05-12T13:00:00'),
-    )
-    const finalResult = completeMission(
-      secondResult.progress,
-      chapter.missions[2],
-      120,
-      new Date('2026-05-12T14:00:00'),
+    const initialResult = {
+      progress: createInitialProgress(),
+      earnedBadgeIds: [] as string[],
+      starsEarned: 1,
+    }
+    const finalResult = chapter.missions.reduce(
+      (result, mission, index) =>
+        completeMission(result.progress, mission, 120, new Date(2026, 4, 12, 8 + index)),
+      initialResult,
     )
 
     expect(finalResult.earnedBadgeIds).toContain(chapter.badgeId)
@@ -185,7 +177,11 @@ describe('progress logic', () => {
       lastActiveDate: '2026-05-12',
       exerciseSecondsToday: 120,
       totalExerciseSeconds: 120,
-      completedMissionIds: [chapters[0].missions[0].id],
+      completedMissionIds: [
+        chapters[0].missions[0].id,
+        chapters[0].missions[1].id,
+        chapters[0].missions[2].id,
+      ],
       unlockedMissionIds: [],
       badgeIds: [],
       acceptedSafety: true,
@@ -198,6 +194,7 @@ describe('progress logic', () => {
     expect(loadedProgress.childName).toBe('Ola')
     expect(loadedProgress.missionStars).toEqual({})
     expect(loadedProgress.unlockedMissionIds).toContain(chapters[0].missions[0].id)
+    expect(loadedProgress.unlockedMissionIds).toContain(chapters[0].missions[3].id)
   })
 
   it('creates fresh progress with the requested locale', () => {

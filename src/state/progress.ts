@@ -170,14 +170,28 @@ function normalizeProgress(progress: Progress): Progress {
     missionStars: progress.missionStars ?? {},
   }
 
-  if (!firstMissionId || normalized.unlockedMissionIds.includes(firstMissionId)) {
-    return normalized
-  }
+  const unlockedMissionIds = normalizeUnlockedMissions(normalized)
 
   return {
     ...normalized,
-    unlockedMissionIds: [firstMissionId, ...normalized.unlockedMissionIds],
+    unlockedMissionIds,
   }
+}
+
+function normalizeUnlockedMissions(progress: Progress) {
+  const unlockedMissionIds = new Set(progress.unlockedMissionIds)
+
+  if (firstMissionId) {
+    unlockedMissionIds.add(firstMissionId)
+  }
+
+  progress.completedMissionIds.forEach((missionId) => {
+    unlockNextMission(Array.from(unlockedMissionIds), missionId).forEach((unlockedMissionId) => {
+      unlockedMissionIds.add(unlockedMissionId)
+    })
+  })
+
+  return Array.from(unlockedMissionIds)
 }
 
 function toDateKey(date: Date) {

@@ -36,7 +36,7 @@ import {
   loadProgress,
   saveProgress,
 } from './state/progress'
-import type { Badge, Exercise, Mission, Progress } from './types'
+import type { Badge, Exercise, LocalizedText, Mission, Progress } from './types'
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>
@@ -51,7 +51,6 @@ const MISSION_COMPLETED_IMAGES = [
   assetPath('gibko-mission-completed-1.webp'),
   assetPath('gibko-mission-completed-2.webp'),
 ]
-const CHAPTER_TARGET_MISSIONS = 12
 const COMPLETION_IMAGE_STORAGE_KEY = 'gibko-completion-image-index'
 
 export function App() {
@@ -281,8 +280,8 @@ function HomeScreen({
       <section className="mission-card">
         <div className="mission-card-copy">
           <p className="eyebrow">{translate('home.dailyMission')}</p>
-          <h2>{translate(dailyMission.titleKey)}</h2>
-          <MissionMeta mission={dailyMission} translate={translate} />
+          <h2>{localize(progress.locale, dailyMission.title)}</h2>
+          <MissionMeta locale={progress.locale} mission={dailyMission} translate={translate} />
           <Link className="primary-action" to={`/mission/${dailyMission.id}`}>
             {isMissionCompleted(progress, dailyMission.id)
               ? translate('mission.repeat')
@@ -306,12 +305,24 @@ function MapScreen({
   const chapter = chapters[0]
   const completedCount = chapter.missions.filter((mission) => isMissionCompleted(progress, mission.id)).length
   const nodes = [
-    { x: '20%', y: '18%' },
-    { x: '51%', y: '10%' },
-    { x: '39%', y: '38%' },
-    { x: '66%', y: '57%' },
-    { x: '23%', y: '75%' },
-    { x: '54%', y: '90%' },
+    { x: '20%', y: '12%' },
+    { x: '50%', y: '8%' },
+    { x: '74%', y: '16%' },
+    { x: '58%', y: '27%' },
+    { x: '30%', y: '25%' },
+    { x: '20%', y: '38%' },
+    { x: '46%', y: '43%' },
+    { x: '72%', y: '38%' },
+    { x: '82%', y: '52%' },
+    { x: '58%', y: '58%' },
+    { x: '32%', y: '55%' },
+    { x: '18%', y: '68%' },
+    { x: '42%', y: '74%' },
+    { x: '70%', y: '70%' },
+    { x: '82%', y: '83%' },
+    { x: '58%', y: '90%' },
+    { x: '32%', y: '87%' },
+    { x: '18%', y: '94%' },
   ]
 
   return (
@@ -330,18 +341,18 @@ function MapScreen({
       <section className="chapter-heading">
         <div>
           <p>{translate('map.chapter')}</p>
-          <h2>{translate(chapter.titleKey)}</h2>
+          <h2>{localize(progress.locale, chapter.title)}</h2>
         </div>
         <strong>
           {translate('map.progress', {
             completed: completedCount,
-            total: CHAPTER_TARGET_MISSIONS,
+            total: chapter.missions.length,
           })}
           <Star size={16} />
         </strong>
       </section>
 
-      <section className="forest-map" aria-label={translate(chapter.titleKey)}>
+      <section className="forest-map" aria-label={localize(progress.locale, chapter.title)}>
         <ForestMapArt />
         <svg className="map-path" viewBox="0 0 340 590" preserveAspectRatio="none">
           <path
@@ -368,6 +379,7 @@ function MapScreen({
               mission={mission}
               position={node}
               stars={mission ? progress.missionStars[mission.id] ?? 1 : 0}
+              locale={progress.locale}
               translate={translate}
               unlocked={unlocked}
             />
@@ -496,24 +508,52 @@ function MissionScreen({
   }
 
   return (
-    <Screen>
+    <Screen className="mission-screen">
       <header className="mission-header">
         <button className="round-button" onClick={() => navigate('/map')} type="button">
           <ChevronLeft />
         </button>
-        <div>
+        <div className="mission-title-block">
           <p className="eyebrow">
             {exerciseIndex + 1} / {mission.exercises.length}
           </p>
-          <h1>{translate(mission.titleKey)}</h1>
+          <h1>{localize(progress.locale, mission.title)}</h1>
         </div>
       </header>
 
       <section className="exercise-card">
-        <ExerciseIcon exercise={exercise} />
-        <h2>{translate(exercise.titleKey)}</h2>
-        <p>{translate(exercise.descriptionKey)}</p>
+        <div className="exercise-card-header">
+          <ExerciseIcon exercise={exercise} />
+          <div>
+            <h2>{localize(progress.locale, exercise.title)}</h2>
+            <p>{localize(progress.locale, exercise.description)}</p>
+          </div>
+        </div>
 
+        <div className="exercise-details">
+          <div>
+            <Clock size={18} />
+            <span>{translate('exercise.estimatedTime')}</span>
+            <strong>{localize(progress.locale, exercise.durationLabel)}</strong>
+          </div>
+          <div>
+            <RotateCcw size={18} />
+            <span>{translate('exercise.repetitions')}</span>
+            <strong>{localize(progress.locale, exercise.repetitions)}</strong>
+          </div>
+        </div>
+        {exercise.note && (
+          <p className="exercise-note">
+            <ShieldCheck size={18} />
+            <span>
+              <strong>{translate('exercise.note')}</strong>
+              {localize(progress.locale, exercise.note)}
+            </span>
+          </p>
+        )}
+      </section>
+
+      <section className="exercise-control-panel">
         <div className="exercise-timer" aria-live="polite">
           <span>{translate('exercise.timer')}</span>
           <strong>{formatDuration(elapsedSeconds)}</strong>
@@ -601,6 +641,10 @@ function formatDuration(totalSeconds: number) {
   const seconds = safeSeconds % 60
 
   return `${minutes}:${String(seconds).padStart(2, '0')}`
+}
+
+function localize(locale: Progress['locale'], value: LocalizedText) {
+  return value[locale] ?? value.en
 }
 
 function ProfileScreen({
@@ -786,15 +830,17 @@ function StatCard({
 }
 
 function MissionMeta({
+  locale,
   mission,
   translate,
 }: {
+  locale: Progress['locale']
   mission: Mission
   translate: (key: string, values?: Record<string, string | number>) => string
 }) {
   return (
     <div className="mission-meta">
-      <span>{translate('mission.minutes', { minutes: mission.estimatedMinutes })}</span>
+      <span>{localize(locale, mission.durationLabel)}</span>
       <span>{translate('mission.xp', { xp: mission.xp })}</span>
     </div>
   )
@@ -802,9 +848,16 @@ function MissionMeta({
 
 function ExerciseIcon({ exercise }: { exercise: Exercise }) {
   const iconMap = {
+    back: RotateCcw,
+    balance: Footprints,
+    ball: Award,
     branch: TreePine,
+    breath: Waves,
+    foot: Footprints,
     frog: Footprints,
+    hip: User,
     leaf: Leaf,
+    mat: TreePine,
     river: Waves,
     vine: RotateCcw,
   }
@@ -922,6 +975,7 @@ function MapNode({
   completed,
   index,
   isCurrent,
+  locale,
   mission,
   position,
   stars,
@@ -931,6 +985,7 @@ function MapNode({
   completed: boolean
   index: number
   isCurrent: boolean
+  locale: Progress['locale']
   mission?: Mission
   position: { x: string; y: string }
   stars: number
@@ -955,7 +1010,7 @@ function MapNode({
   return (
     <div className="map-node-wrap" style={{ left: position.x, top: position.y }}>
       {mission && unlocked ? (
-        <Link aria-label={translate(mission.titleKey)} to={`/mission/${mission.id}`}>
+        <Link aria-label={localize(locale, mission.title)} to={`/mission/${mission.id}`}>
           {content}
         </Link>
       ) : (
