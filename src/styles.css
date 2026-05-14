@@ -601,7 +601,8 @@ input:focus {
 
 .xp-chip svg,
 .chapter-heading strong svg,
-.node-stars svg {
+.node-stars svg,
+.summary-stars svg {
   color: var(--gold);
   fill: currentColor;
 }
@@ -911,6 +912,16 @@ input:focus {
 .summary-xp {
   color: var(--cyan);
   font-size: 1.25rem;
+}
+
+.summary-stars {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.summary-stars svg {
+  height: 28px;
+  width: 28px;
 }
 
 .summary-time {

@@ -367,6 +367,7 @@ function MapScreen({
               key={index}
               mission={mission}
               position={node}
+              stars={mission ? progress.missionStars[mission.id] ?? 1 : 0}
               translate={translate}
               unlocked={unlocked}
             />
@@ -391,8 +392,10 @@ function MissionScreen({
   const mission = chapters.flatMap((chapter) => chapter.missions).find((candidate) => candidate.id === missionId)
   const [exerciseIndex, setExerciseIndex] = useState(0)
   const [startedExerciseIds, setStartedExerciseIds] = useState<string[]>([])
+  const [difficultyHelpExerciseIds, setDifficultyHelpExerciseIds] = useState<string[]>([])
   const [skipHint, setSkipHint] = useState(false)
   const [earnedBadgeIds, setEarnedBadgeIds] = useState<string[]>([])
+  const [starsEarned, setStarsEarned] = useState(1)
   const [completionImageIndex, setCompletionImageIndex] = useState(0)
   const [activeExerciseStartedAt, setActiveExerciseStartedAt] = useState<number | null>(null)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
@@ -457,15 +460,23 @@ function MissionScreen({
       return
     }
 
-    const result = completeMission(progress, mission, nextMissionSeconds)
+    const result = completeMission(
+      progress,
+      mission,
+      nextMissionSeconds,
+      new Date(),
+      difficultyHelpExerciseIds.length > 0,
+    )
     setCompletionImageIndex(getNextCompletionImageIndex())
     setProgress(result.progress)
     setEarnedBadgeIds(result.earnedBadgeIds)
+    setStarsEarned(result.starsEarned)
     setMissionDone(true)
   }
 
   const markTooHard = () => {
     setSkipHint(true)
+    setDifficultyHelpExerciseIds([...new Set([...difficultyHelpExerciseIds, exercise.id])])
     if (!started) {
       setStartedExerciseIds([...startedExerciseIds, exercise.id])
     }
@@ -478,6 +489,7 @@ function MissionScreen({
         earnedBadgeIds={earnedBadgeIds}
         missionSeconds={missionSeconds}
         mission={mission}
+        starsEarned={starsEarned}
         translate={translate}
       />
     )
@@ -537,12 +549,14 @@ function Summary({
   earnedBadgeIds,
   missionSeconds,
   mission,
+  starsEarned,
   translate,
 }: {
   completionImageIndex: number
   earnedBadgeIds: string[]
   missionSeconds: number
   mission: Mission
+  starsEarned: number
   translate: (key: string, values?: Record<string, string | number>) => string
 }) {
   const earnedBadges = badges.filter((badge) => earnedBadgeIds.includes(badge.id))
@@ -556,6 +570,9 @@ function Summary({
       <strong className="summary-xp">
         {translate('summary.earned')} {translate('mission.xp', { xp: mission.xp })}
       </strong>
+      <div className="summary-stars" aria-label={translate('summary.stars', { stars: starsEarned })}>
+        <StarRating stars={starsEarned} />
+      </div>
       <div className="summary-time">
         <Clock size={18} />
         <span>{translate('summary.time')}</span>
@@ -907,6 +924,7 @@ function MapNode({
   isCurrent,
   mission,
   position,
+  stars,
   translate,
   unlocked,
 }: {
@@ -915,6 +933,7 @@ function MapNode({
   isCurrent: boolean
   mission?: Mission
   position: { x: string; y: string }
+  stars: number
   translate: (key: string, values?: Record<string, string | number>) => string
   unlocked: boolean
 }) {
@@ -925,11 +944,7 @@ function MapNode({
       </div>
       <div className="node-stars">
         {completed ? (
-          <>
-            <Star />
-            <Star />
-            <Star />
-          </>
+          <StarRating stars={stars} />
         ) : isCurrent ? (
           <strong>{translate('mission.startLabel')}</strong>
         ) : null}
@@ -947,6 +962,16 @@ function MapNode({
         content
       )}
     </div>
+  )
+}
+
+function StarRating({ stars }: { stars: number }) {
+  return (
+    <>
+      {Array.from({ length: Math.max(1, Math.min(3, stars)) }, (_, index) => (
+        <Star key={index} />
+      ))}
+    </>
   )
 }
 

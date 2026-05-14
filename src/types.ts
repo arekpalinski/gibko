@@ -1,18 +1,49 @@
 export type Locale = 'pl' | 'en'
 
+export type LocalizedText = Record<Locale, string>
+
+export type Equipment = 'none' | 'softBall' | 'sensoryCushion' | 'sensoryMat'
+
+export type ExerciseIcon =
+  | 'back'
+  | 'balance'
+  | 'ball'
+  | 'branch'
+  | 'breath'
+  | 'foot'
+  | 'frog'
+  | 'hip'
+  | 'leaf'
+  | 'mat'
+  | 'river'
+  | 'vine'
+
+export type ExerciseDefinition = {
+  id: string
+  title: LocalizedText
+  icon: ExerciseIcon
+  equipment?: Equipment[]
+}
+
 export type Exercise = {
   id: string
-  titleKey: string
-  descriptionKey: string
-  icon: 'branch' | 'leaf' | 'vine' | 'frog' | 'river'
+  exerciseId: string
+  title: LocalizedText
+  description: LocalizedText
+  durationLabel: LocalizedText
+  repetitions: LocalizedText
+  note?: LocalizedText
+  icon: ExerciseIcon
   minutes: number
 }
 
 export type Mission = {
   id: string
   chapterId: string
-  titleKey: string
-  teaserKey: string
+  title: LocalizedText
+  teaser: LocalizedText
+  goal: LocalizedText
+  equipment: Equipment[]
   xp: number
   estimatedMinutes: number
   exercises: Exercise[]
@@ -20,8 +51,8 @@ export type Mission = {
 
 export type Chapter = {
   id: string
-  titleKey: string
-  descriptionKey: string
+  title: LocalizedText
+  description: LocalizedText
   badgeId: string
   missions: Mission[]
 }
@@ -42,6 +73,7 @@ export type Progress = {
   exerciseSecondsToday: number
   totalExerciseSeconds: number
   completedMissionIds: string[]
+  missionStars: Record<string, number>
   unlockedMissionIds: string[]
   badgeIds: string[]
   acceptedSafety: boolean
@@ -50,4 +82,5 @@ export type Progress = {
 export type MissionResult = {
   progress: Progress
   earnedBadgeIds: string[]
+  starsEarned: number
 }

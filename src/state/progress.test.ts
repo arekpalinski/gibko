@@ -1,8 +1,20 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { chapters } from '../data/chapters'
-import { completeMission, createInitialProgress } from './progress'
+import {
+  calculateMissionStars,
+  clearProgress,
+  completeMission,
+  createInitialProgress,
+  loadProgress,
+} from './progress'
+
+const storageKey = 'gibko-progress-v1'
 
 describe('progress logic', () => {
+  beforeEach(() => {
+    clearProgress()
+  })
+
   it('adds XP and unlocks the next mission after completion', () => {
     const mission = chapters[0].missions[0]
     const result = completeMission(createInitialProgress(), mission, 37, new Date('2026-05-12T12:00:00'))
@@ -11,6 +23,7 @@ describe('progress logic', () => {
     expect(result.progress.exerciseSecondsToday).toBe(37)
     expect(result.progress.totalExerciseSeconds).toBe(37)
     expect(result.progress.completedMissionIds).toContain(mission.id)
+    expect(result.progress.missionStars[mission.id]).toBe(2)
     expect(result.progress.unlockedMissionIds).toContain(chapters[0].missions[1].id)
   })
 
@@ -22,5 +35,176 @@ describe('progress logic', () => {
     expect(dayTwo.progress.streakDays).toBe(2)
     expect(dayTwo.progress.exerciseSecondsToday).toBe(45)
     expect(dayTwo.progress.totalExerciseSeconds).toBe(75)
+  })
+
+  it('adds exercise time across multiple missions on the same day', () => {
+    const firstMission = chapters[0].missions[0]
+    const secondMission = chapters[0].missions[1]
+    const firstResult = completeMission(
+      createInitialProgress(),
+      firstMission,
+      120,
+      new Date('2026-05-12T12:00:00'),
+    )
+    const secondResult = completeMission(
+      firstResult.progress,
+      secondMission,
+      180,
+      new Date('2026-05-12T13:00:00'),
+    )
+
+    expect(secondResult.progress.exerciseSecondsToday).toBe(300)
+    expect(secondResult.progress.totalExerciseSeconds).toBe(300)
+    expect(secondResult.progress.streakDays).toBe(1)
+  })
+
+  it('scores one star when the child used the too-hard help', () => {
+    const mission = chapters[0].missions[0]
+
+    expect(calculateMissionStars(mission, mission.estimatedMinutes * 60, true)).toBe(1)
+  })
+
+  it('scores three stars for a steady full mission without difficulty help', () => {
+    const mission = chapters[0].missions[0]
+    const plannedSeconds = mission.exercises.reduce((sum, exercise) => sum + exercise.minutes * 60, 0)
+
+    expect(calculateMissionStars(mission, plannedSeconds, false)).toBe(3)
+  })
+
+  it('scores three stars exactly at the steady-time threshold', () => {
+    const mission = chapters[0].missions[0]
+    const plannedSeconds = mission.exercises.reduce((sum, exercise) => sum + exercise.minutes * 60, 0)
+    const thresholdSeconds = plannedSeconds * 0.65
+
+    expect(calculateMissionStars(mission, thresholdSeconds, false)).toBe(3)
+    expect(calculateMissionStars(mission, thresholdSeconds - 1, false)).toBe(2)
+  })
+
+  it('keeps the best star score when a mission is repeated', () => {
+    const mission = chapters[0].missions[0]
+    const firstTry = completeMission(
+      createInitialProgress(),
+      mission,
+      mission.estimatedMinutes * 60,
+      new Date('2026-05-12T12:00:00'),
+      true,
+    )
+    const secondTry = completeMission(
+      firstTry.progress,
+      mission,
+      mission.estimatedMinutes * 60,
+      new Date('2026-05-12T13:00:00'),
+    )
+
+    expect(firstTry.starsEarned).toBe(1)
+    expect(secondTry.starsEarned).toBe(3)
+    expect(secondTry.progress.missionStars[mission.id]).toBe(3)
+  })
+
+  it('does not duplicate completed missions when repeated', () => {
+    const mission = chapters[0].missions[0]
+    const firstTry = completeMission(
+      createInitialProgress(),
+      mission,
+      120,
+      new Date('2026-05-12T12:00:00'),
+    )
+    const secondTry = completeMission(
+      firstTry.progress,
+      mission,
+      180,
+      new Date('2026-05-12T13:00:00'),
+    )
+
+    expect(secondTry.progress.completedMissionIds.filter((missionId) => missionId === mission.id)).toHaveLength(1)
+  })
+
+  it('does not unlock a bogus mission after the last mission', () => {
+    const allMissions = chapters.flatMap((chapter) => chapter.missions)
+    const lastMission = allMissions[allMissions.length - 1]
+    const progress = {
+      ...createInitialProgress(),
+      unlockedMissionIds: allMissions.map((mission) => mission.id),
+    }
+    const result = completeMission(progress, lastMission, 120, new Date('2026-05-12T12:00:00'))
+
+    expect(result.progress.completedMissionIds).toContain(lastMission.id)
+    expect(result.progress.unlockedMissionIds).toEqual(progress.unlockedMissionIds)
+  })
+
+  it('awards the chapter badge when all missions in the chapter are complete', () => {
+    const chapter = chapters[0]
+    const firstResult = completeMission(
+      createInitialProgress(),
+      chapter.missions[0],
+      120,
+      new Date('2026-05-12T12:00:00'),
+    )
+    const secondResult = completeMission(
+      firstResult.progress,
+      chapter.missions[1],
+      120,
+      new Date('2026-05-12T13:00:00'),
+    )
+    const finalResult = completeMission(
+      secondResult.progress,
+      chapter.missions[2],
+      120,
+      new Date('2026-05-12T14:00:00'),
+    )
+
+    expect(finalResult.earnedBadgeIds).toContain(chapter.badgeId)
+    expect(finalResult.progress.badgeIds).toContain(chapter.badgeId)
+  })
+
+  it('awards morning and weekend badges for an early weekend mission', () => {
+    const mission = chapters[0].missions[0]
+    const result = completeMission(createInitialProgress(), mission, 120, new Date('2026-05-16T09:00:00'))
+
+    expect(result.earnedBadgeIds).toContain('morning-leaf')
+    expect(result.earnedBadgeIds).toContain('weekend-grove')
+  })
+
+  it('awards the streak badge after three active days in a row', () => {
+    const mission = chapters[0].missions[0]
+    const dayOne = completeMission(createInitialProgress(), mission, 120, new Date('2026-05-12T12:00:00'))
+    const dayTwo = completeMission(dayOne.progress, mission, 120, new Date('2026-05-13T12:00:00'))
+    const dayThree = completeMission(dayTwo.progress, mission, 120, new Date('2026-05-14T12:00:00'))
+
+    expect(dayThree.progress.streakDays).toBe(3)
+    expect(dayThree.earnedBadgeIds).toContain('streak-3')
+    expect(dayThree.progress.badgeIds).toContain('streak-3')
+  })
+
+  it('loads legacy local progress without mission stars safely', () => {
+    const legacyProgress = {
+      childName: 'Ola',
+      locale: 'pl',
+      xp: 80,
+      streakDays: 1,
+      lastActiveDate: '2026-05-12',
+      exerciseSecondsToday: 120,
+      totalExerciseSeconds: 120,
+      completedMissionIds: [chapters[0].missions[0].id],
+      unlockedMissionIds: [],
+      badgeIds: [],
+      acceptedSafety: true,
+    }
+
+    localStorage.setItem(storageKey, JSON.stringify(legacyProgress))
+
+    const loadedProgress = loadProgress()
+
+    expect(loadedProgress.childName).toBe('Ola')
+    expect(loadedProgress.missionStars).toEqual({})
+    expect(loadedProgress.unlockedMissionIds).toContain(chapters[0].missions[0].id)
+  })
+
+  it('creates fresh progress with the requested locale', () => {
+    const progress = createInitialProgress('en')
+
+    expect(progress.locale).toBe('en')
+    expect(progress.unlockedMissionIds).toEqual([chapters[0].missions[0].id])
+    expect(progress.acceptedSafety).toBe(false)
   })
 })

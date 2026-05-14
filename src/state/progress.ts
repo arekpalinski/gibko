@@ -15,6 +15,7 @@ export function createInitialProgress(locale: Locale = 'pl'): Progress {
     exerciseSecondsToday: 0,
     totalExerciseSeconds: 0,
     completedMissionIds: [],
+    missionStars: {},
     unlockedMissionIds: firstMissionId ? [firstMissionId] : [],
     badgeIds: [],
     acceptedSafety: false,
@@ -56,6 +57,7 @@ export function completeMission(
   mission: Mission,
   actualSeconds = mission.estimatedMinutes * 60,
   now = new Date(),
+  usedDifficultyHelp = false,
 ): MissionResult {
   const today = toDateKey(now)
   const yesterday = toDateKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1))
@@ -78,9 +80,15 @@ export function completeMission(
     now,
   )
   const badgeIds = Array.from(new Set([...progress.badgeIds, ...earnedBadgeIds]))
+  const starsEarned = calculateMissionStars(mission, actualSeconds, usedDifficultyHelp)
+  const missionStars = {
+    ...progress.missionStars,
+    [mission.id]: Math.max(progress.missionStars[mission.id] ?? 0, starsEarned),
+  }
 
   return {
     earnedBadgeIds,
+    starsEarned,
     progress: {
       ...progress,
       xp: progress.xp + mission.xp,
@@ -92,10 +100,28 @@ export function completeMission(
           : actualSeconds,
       totalExerciseSeconds: progress.totalExerciseSeconds + actualSeconds,
       completedMissionIds,
+      missionStars,
       unlockedMissionIds,
       badgeIds,
     },
   }
+}
+
+export function calculateMissionStars(
+  mission: Mission,
+  actualSeconds: number,
+  usedDifficultyHelp = false,
+) {
+  if (usedDifficultyHelp) {
+    return 1
+  }
+
+  const plannedSeconds =
+    mission.exercises.reduce((sum, exercise) => sum + exercise.minutes * 60, 0) ||
+    mission.estimatedMinutes * 60
+  const steadyEnoughSeconds = plannedSeconds * 0.65
+
+  return actualSeconds >= steadyEnoughSeconds ? 3 : 2
 }
 
 function unlockNextMission(unlockedMissionIds: string[], missionId: string) {
@@ -139,13 +165,18 @@ function getEarnedBadges(progress: Progress, mission: Mission, now: Date) {
 }
 
 function normalizeProgress(progress: Progress): Progress {
-  if (!firstMissionId || progress.unlockedMissionIds.includes(firstMissionId)) {
-    return progress
+  const normalized = {
+    ...progress,
+    missionStars: progress.missionStars ?? {},
+  }
+
+  if (!firstMissionId || normalized.unlockedMissionIds.includes(firstMissionId)) {
+    return normalized
   }
 
   return {
-    ...progress,
-    unlockedMissionIds: [firstMissionId, ...progress.unlockedMissionIds],
+    ...normalized,
+    unlockedMissionIds: [firstMissionId, ...normalized.unlockedMissionIds],
   }
 }
 
