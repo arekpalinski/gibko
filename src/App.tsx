@@ -1,12 +1,12 @@
 import {
   Award,
-  Bell,
   BookOpen,
   CalendarDays,
   Check,
   ChevronLeft,
   ChevronRight,
   Clock,
+  Download,
   Footprints,
   Home,
   Languages,
@@ -68,20 +68,43 @@ export function App() {
       event.preventDefault()
       setInstallPrompt(event as BeforeInstallPromptEvent)
     }
+    const clearInstallPrompt = () => setInstallPrompt(null)
 
     window.addEventListener('beforeinstallprompt', handler)
-    return () => window.removeEventListener('beforeinstallprompt', handler)
+    window.addEventListener('appinstalled', clearInstallPrompt)
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler)
+      window.removeEventListener('appinstalled', clearInstallPrompt)
+    }
   }, [])
 
   const setProgress = (next: Progress) => {
     setProgressState(next)
   }
 
+  const promptInstall = async () => {
+    if (!installPrompt) {
+      return
+    }
+
+    await installPrompt.prompt()
+    setInstallPrompt(null)
+  }
+
   const translate = (key: string, values?: Record<string, string | number>) =>
     t(progress.locale, key, values)
 
   if (!progress.acceptedSafety || !progress.childName) {
-    return <Onboarding progress={progress} setProgress={setProgress} translate={translate} />
+    return (
+      <Onboarding
+        canInstall={installPrompt !== null}
+        onInstall={promptInstall}
+        progress={progress}
+        setProgress={setProgress}
+        translate={translate}
+      />
+    )
   }
 
   return (
@@ -92,7 +115,8 @@ export function App() {
             path="/"
             element={
               <HomeScreen
-                installPrompt={installPrompt}
+                canInstall={installPrompt !== null}
+                onInstall={promptInstall}
                 progress={progress}
                 translate={translate}
               />
@@ -122,10 +146,14 @@ export function App() {
 }
 
 function Onboarding({
+  canInstall,
+  onInstall,
   progress,
   setProgress,
   translate,
 }: {
+  canInstall: boolean
+  onInstall: () => void
   progress: Progress
   setProgress: (progress: Progress) => void
   translate: (key: string, values?: Record<string, string | number>) => string
@@ -143,10 +171,18 @@ function Onboarding({
             <img className="intro-logo" src={GIBKO_LOGO_SRC} alt="Gibko" />
             <h1>{translate('onboarding.title')}</h1>
             <p>{translate('onboarding.subtitle')}</p>
-            <button className="primary-action wide" onClick={() => setStep('setup')} type="button">
-              {translate('onboarding.start')}
-              <ChevronRight size={20} />
-            </button>
+            <div className="onboarding-actions">
+              <button className="primary-action wide" onClick={() => setStep('setup')} type="button">
+                {translate('onboarding.start')}
+                <ChevronRight size={20} />
+              </button>
+              {canInstall && (
+                <button className="secondary-action install-action wide" onClick={onInstall} type="button">
+                  <Download size={20} />
+                  {translate('home.install')}
+                </button>
+              )}
+            </div>
             <ProgressDots activeIndex={0} />
           </section>
         ) : (
@@ -203,11 +239,13 @@ function Onboarding({
 }
 
 function HomeScreen({
-  installPrompt,
+  canInstall,
+  onInstall,
   progress,
   translate,
 }: {
-  installPrompt: BeforeInstallPromptEvent | null
+  canInstall: boolean
+  onInstall: () => void
   progress: Progress
   translate: (key: string, values?: Record<string, string | number>) => string
 }) {
@@ -220,14 +258,14 @@ function HomeScreen({
     <Screen>
       <header className="top-row">
         <Wordmark />
-        <button
-          className="ghost-icon"
-          onClick={() => installPrompt?.prompt()}
-          title={translate('home.install')}
-          type="button"
-        >
-          {installPrompt ? <Bell /> : <Leaf />}
-        </button>
+        {canInstall ? (
+          <button className="install-chip-button" onClick={onInstall} type="button">
+            <Download size={18} />
+            <span>{translate('home.install')}</span>
+          </button>
+        ) : (
+          <span className="top-row-spacer" />
+        )}
       </header>
 
       <section className="home-hero">

@@ -209,10 +209,37 @@ p {
   width: 100%;
 }
 
+.secondary-action.wide {
+  width: 100%;
+}
+
 .secondary-action {
   background: rgba(255, 255, 255, 0.09);
   border: 1px solid var(--line);
   color: white;
+}
+
+.install-action {
+  border-color: rgba(22, 214, 194, 0.34);
+  color: var(--cyan);
+}
+
+.install-chip-button {
+  align-items: center;
+  background: rgba(22, 214, 194, 0.1);
+  border: 1px solid rgba(22, 214, 194, 0.28);
+  border-radius: 999px;
+  color: var(--cyan);
+  display: inline-flex;
+  font-size: 0.82rem;
+  font-weight: 950;
+  gap: 8px;
+  min-height: 42px;
+  padding: 9px 13px;
+}
+
+.top-row-spacer {
+  width: 42px;
 }
 
 .text-button {
@@ -260,8 +287,11 @@ p {
   padding-top: 14px;
 }
 
-.intro-screen .primary-action {
+.onboarding-actions {
+  display: grid;
+  gap: 10px;
   margin-top: auto;
+  width: 100%;
 }
 
 .setup-screen {
