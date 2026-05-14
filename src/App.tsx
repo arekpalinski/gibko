@@ -445,6 +445,7 @@ function MissionScreen({
   const exercise = mission.exercises[exerciseIndex]
   const isLastExercise = exerciseIndex === mission.exercises.length - 1
   const started = activeExerciseStartedAt !== null || startedExerciseIds.includes(exercise.id)
+  const usedDifficultyHelp = difficultyHelpExerciseIds.includes(exercise.id)
 
   const startExercise = () => {
     if (activeExerciseStartedAt) {
@@ -570,7 +571,7 @@ function MissionScreen({
             {translate('exercise.start')}
           </button>
           <button className="primary-action" disabled={!started} onClick={finishExercise} type="button">
-            {isLastExercise ? translate('exercise.done') : translate('exercise.next')}
+            {usedDifficultyHelp ? translate('exercise.next') : translate('exercise.done')}
             <Check size={20} />
           </button>
         </div>
@@ -863,7 +864,7 @@ function ExerciseIcon({ exercise }: { exercise: Exercise }) {
   }
   const Icon = iconMap[exercise.icon]
   return (
-    <div className="exercise-icon">
+    <div className={`exercise-icon exercise-icon-${exercise.icon}`}>
       <Icon size={58} />
     </div>
   )
