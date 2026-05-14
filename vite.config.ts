@@ -9,7 +9,6 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: [
-        'favicon.svg',
         'assets/gibko-logo-transparent.webp',
         'assets/gibko-mascot-stretch-transparent.webp',
         'assets/gibko-hello-transparent.webp',
