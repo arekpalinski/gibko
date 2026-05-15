@@ -425,6 +425,7 @@ function MissionScreen({
   const [skipHint, setSkipHint] = useState(false)
   const [earnedBadgeIds, setEarnedBadgeIds] = useState<string[]>([])
   const [starsEarned, setStarsEarned] = useState(1)
+  const [xpEarned, setXpEarned] = useState(0)
   const [completionImageIndex, setCompletionImageIndex] = useState(0)
   const [nextAdventureId, setNextAdventureId] = useState<string | null>(null)
   const [activeExerciseStartedAt, setActiveExerciseStartedAt] = useState<number | null>(null)
@@ -439,6 +440,7 @@ function MissionScreen({
     setSkipHint(false)
     setEarnedBadgeIds([])
     setStarsEarned(1)
+    setXpEarned(0)
     setCompletionImageIndex(0)
     setNextAdventureId(null)
     setActiveExerciseStartedAt(null)
@@ -523,6 +525,7 @@ function MissionScreen({
     setProgress(result.progress)
     setEarnedBadgeIds(result.earnedBadgeIds)
     setStarsEarned(result.starsEarned)
+    setXpEarned(result.xpEarned)
     setNextAdventureId(findNextAdventure(result.progress)?.id ?? null)
     setMissionDone(true)
   }
@@ -541,9 +544,9 @@ function MissionScreen({
         completionImageIndex={completionImageIndex}
         earnedBadgeIds={earnedBadgeIds}
         missionSeconds={missionSeconds}
-        mission={mission}
         nextAdventureId={nextAdventureId}
         starsEarned={starsEarned}
+        xpEarned={xpEarned}
         translate={translate}
       />
     )
@@ -658,17 +661,17 @@ function Summary({
   completionImageIndex,
   earnedBadgeIds,
   missionSeconds,
-  mission,
   nextAdventureId,
   starsEarned,
+  xpEarned,
   translate,
 }: {
   completionImageIndex: number
   earnedBadgeIds: string[]
   missionSeconds: number
-  mission: Mission
   nextAdventureId: string | null
   starsEarned: number
+  xpEarned: number
   translate: (key: string, values?: Record<string, string | number>) => string
 }) {
   const earnedBadges = badges.filter((badge) => earnedBadgeIds.includes(badge.id))
@@ -680,7 +683,7 @@ function Summary({
       <h1>{translate('summary.title')}</h1>
       <p>{translate('summary.body')}</p>
       <strong className="summary-xp">
-        {translate('summary.earned')} {translate('mission.xp', { xp: mission.xp })}
+        {translate('summary.earned')} {translate('mission.xp', { xp: xpEarned })}
       </strong>
       <div className="summary-stars" aria-label={translate('summary.stars', { stars: starsEarned })}>
         <LeafRating leaves={starsEarned} />

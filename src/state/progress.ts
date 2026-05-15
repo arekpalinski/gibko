@@ -81,6 +81,7 @@ export function completeMission(
   )
   const badgeIds = Array.from(new Set([...progress.badgeIds, ...earnedBadgeIds]))
   const starsEarned = calculateMissionStars(mission, actualSeconds, usedDifficultyHelp)
+  const xpEarned = calculateMissionXp(mission, actualSeconds)
   const missionStars = {
     ...progress.missionStars,
     [mission.id]: Math.max(progress.missionStars[mission.id] ?? 0, starsEarned),
@@ -89,9 +90,10 @@ export function completeMission(
   return {
     earnedBadgeIds,
     starsEarned,
+    xpEarned,
     progress: {
       ...progress,
-      xp: progress.xp + mission.xp,
+      xp: progress.xp + xpEarned,
       streakDays,
       lastActiveDate: today,
       exerciseSecondsToday:
@@ -116,12 +118,41 @@ export function calculateMissionStars(
     return 1
   }
 
-  const plannedSeconds =
+  const completionRatio = calculateMissionCompletionRatio(mission, actualSeconds)
+
+  if (completionRatio >= 1) {
+    return 3
+  }
+
+  return completionRatio >= 0.5 ? 2 : 1
+}
+
+export function calculateMissionXp(mission: Mission, actualSeconds: number) {
+  const safeSeconds = Math.max(0, actualSeconds)
+  const requiredSeconds = getMissionFullRewardSeconds(mission)
+  const plannedSeconds = getMissionPlannedSeconds(mission)
+  const baseXp = Math.min(mission.xp, Math.round(mission.xp * (safeSeconds / requiredSeconds)))
+  const extraXp = safeSeconds > plannedSeconds ? 10 : 0
+
+  return baseXp + extraXp
+}
+
+export function calculateMissionCompletionRatio(mission: Mission, actualSeconds: number) {
+  const safeSeconds = Math.max(0, actualSeconds)
+  const requiredSeconds = getMissionFullRewardSeconds(mission)
+
+  return Math.min(1, safeSeconds / requiredSeconds)
+}
+
+export function getMissionPlannedSeconds(mission: Mission) {
+  return (
     mission.exercises.reduce((sum, exercise) => sum + exercise.minutes * 60, 0) ||
     mission.estimatedMinutes * 60
-  const steadyEnoughSeconds = plannedSeconds * 0.65
+  )
+}
 
-  return actualSeconds >= steadyEnoughSeconds ? 3 : 2
+function getMissionFullRewardSeconds(mission: Mission) {
+  return Math.max(1, getMissionPlannedSeconds(mission) * 0.85)
 }
 
 function unlockNextMission(unlockedMissionIds: string[], missionId: string) {

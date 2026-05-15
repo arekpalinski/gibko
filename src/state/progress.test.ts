@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { chapters } from '../data/chapters'
 import {
+  calculateMissionXp,
   calculateMissionStars,
   clearProgress,
   completeMission,
   createInitialProgress,
+  getMissionPlannedSeconds,
   loadProgress,
 } from './progress'
 
@@ -17,14 +19,69 @@ describe('progress logic', () => {
 
   it('adds XP and unlocks the next mission after completion', () => {
     const mission = chapters[0].missions[0]
-    const result = completeMission(createInitialProgress(), mission, 37, new Date('2026-05-12T12:00:00'))
+    const fullRewardSeconds = getMissionPlannedSeconds(mission) * 0.85
+    const result = completeMission(
+      createInitialProgress(),
+      mission,
+      fullRewardSeconds,
+      new Date('2026-05-12T12:00:00'),
+    )
 
     expect(result.progress.xp).toBe(mission.xp)
-    expect(result.progress.exerciseSecondsToday).toBe(37)
-    expect(result.progress.totalExerciseSeconds).toBe(37)
+    expect(result.xpEarned).toBe(mission.xp)
+    expect(result.progress.exerciseSecondsToday).toBe(fullRewardSeconds)
+    expect(result.progress.totalExerciseSeconds).toBe(fullRewardSeconds)
     expect(result.progress.completedMissionIds).toContain(mission.id)
-    expect(result.progress.missionStars[mission.id]).toBe(2)
+    expect(result.progress.missionStars[mission.id]).toBe(3)
     expect(result.progress.unlockedMissionIds).toContain(chapters[0].missions[1].id)
+  })
+
+  it('awards proportional XP below the full reward time threshold', () => {
+    const mission = chapters[0].missions[0]
+    const fullRewardSeconds = getMissionPlannedSeconds(mission) * 0.85
+    const actualSeconds = fullRewardSeconds / 2
+    const result = completeMission(
+      createInitialProgress(),
+      mission,
+      actualSeconds,
+      new Date('2026-05-12T12:00:00'),
+    )
+
+    expect(calculateMissionXp(mission, actualSeconds)).toBe(Math.round(mission.xp / 2))
+    expect(result.xpEarned).toBe(Math.round(mission.xp / 2))
+    expect(result.progress.xp).toBe(Math.round(mission.xp / 2))
+    expect(result.progress.missionStars[mission.id]).toBe(2)
+  })
+
+  it('awards only a tiny reward and one leaf for a near-instant completion', () => {
+    const mission = chapters[0].missions[0]
+    const result = completeMission(
+      createInitialProgress(),
+      mission,
+      1,
+      new Date('2026-05-12T12:00:00'),
+    )
+
+    expect(result.xpEarned).toBe(0)
+    expect(result.starsEarned).toBe(1)
+    expect(result.progress.xp).toBe(0)
+    expect(result.progress.missionStars[mission.id]).toBe(1)
+  })
+
+  it('adds ten bonus XP when the child spends longer than the planned mission time', () => {
+    const mission = chapters[0].missions[0]
+    const plannedSeconds = getMissionPlannedSeconds(mission)
+    const result = completeMission(
+      createInitialProgress(),
+      mission,
+      plannedSeconds + 1,
+      new Date('2026-05-12T12:00:00'),
+    )
+
+    expect(calculateMissionXp(mission, plannedSeconds + 1)).toBe(mission.xp + 10)
+    expect(result.xpEarned).toBe(mission.xp + 10)
+    expect(result.progress.xp).toBe(mission.xp + 10)
+    expect(result.starsEarned).toBe(3)
   })
 
   it('keeps a gentle daily streak for consecutive days', () => {
@@ -73,8 +130,7 @@ describe('progress logic', () => {
 
   it('scores three stars exactly at the steady-time threshold', () => {
     const mission = chapters[0].missions[0]
-    const plannedSeconds = mission.exercises.reduce((sum, exercise) => sum + exercise.minutes * 60, 0)
-    const thresholdSeconds = plannedSeconds * 0.65
+    const thresholdSeconds = getMissionPlannedSeconds(mission) * 0.85
 
     expect(calculateMissionStars(mission, thresholdSeconds, false)).toBe(3)
     expect(calculateMissionStars(mission, thresholdSeconds - 1, false)).toBe(2)
@@ -138,6 +194,7 @@ describe('progress logic', () => {
       progress: createInitialProgress(),
       earnedBadgeIds: [] as string[],
       starsEarned: 1,
+      xpEarned: 0,
     }
     const finalResult = chapter.missions.reduce(
       (result, mission, index) =>

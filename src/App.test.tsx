@@ -32,6 +32,8 @@ describe('mission flow', () => {
       fireEvent.click(await screen.findByRole('button', { name: 'Done' }))
     }
 
+    expect(await screen.findByText('You earn +0 energy leaves')).toBeInTheDocument()
+
     fireEvent.click(await screen.findByRole('link', { name: 'Next adventure' }))
 
     expect(await screen.findByText(secondMission.title.en)).toBeInTheDocument()

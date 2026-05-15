@@ -84,4 +84,5 @@ export type MissionResult = {
   progress: Progress
   earnedBadgeIds: string[]
   starsEarned: number
+  xpEarned: number
 }
