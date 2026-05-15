@@ -20,9 +20,9 @@ import {
   User,
   Waves,
 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Link, NavLink, Route, Routes, useNavigate, useParams } from 'react-router-dom'
+import { Link, NavLink, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { badges } from './data/badges'
 import { chapters } from './data/chapters'
 import { t } from './i18n/messages'
@@ -293,7 +293,7 @@ function HomeScreen({
         <div className="mission-card-copy">
           <p className="eyebrow">{translate('home.dailyMission')}</p>
           <h2>{localize(progress.locale, nextAdventure.title)}</h2>
-          <MissionMeta locale={progress.locale} mission={nextAdventure} translate={translate} />
+          <MissionMeta locale={progress.locale} mission={nextAdventure} />
           <Link className="primary-action" to={`/mission/${nextAdventure.id}`}>
             {isMissionCompleted(progress, nextAdventure.id)
               ? translate('mission.repeat')
@@ -837,7 +837,29 @@ function SettingsScreen({
 }
 
 function Screen({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <div className={`screen ${className}`}>{children}</div>
+  const location = useLocation()
+  const screenRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const screen = screenRef.current
+    if (!screen) {
+      return
+    }
+
+    if (typeof screen.scrollTo === 'function') {
+      screen.scrollTo({ left: 0, top: 0 })
+      return
+    }
+
+    screen.scrollLeft = 0
+    screen.scrollTop = 0
+  }, [location.pathname])
+
+  return (
+    <div className={`screen ${className}`} ref={screenRef}>
+      {children}
+    </div>
+  )
 }
 
 function BottomNav({ translate }: { translate: (key: string) => string }) {
@@ -904,16 +926,17 @@ function StatCard({
 function MissionMeta({
   locale,
   mission,
-  translate,
 }: {
   locale: Progress['locale']
   mission: Mission
-  translate: (key: string, values?: Record<string, string | number>) => string
 }) {
   return (
     <div className="mission-meta">
       <span>{localize(locale, mission.durationLabel)}</span>
-      <span>{translate('mission.xp', { xp: mission.xp })}</span>
+      <span className="energy-leaves-pill">
+        +{mission.xp}
+        <Leaf size={14} />
+      </span>
     </div>
   )
 }
