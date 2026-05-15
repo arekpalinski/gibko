@@ -6,26 +6,36 @@ Gibko should mix silly, motivating, and occasionally educational language. The a
 
 ## Progression
 
-- Missions unlock in order.
-- Completed missions can be repeated.
-- Replays still grant XP because movement is valuable.
-- Streaks are gentle and should not create pressure.
+- Adventures unlock in order.
+- Completed adventures can be repeated.
+- Replays still grant energy leaves because movement is valuable.
+- The day path is gentle and should not create pressure.
+- The app should value real movement time without making the child feel punished for doing less.
 
 ## Rewards
 
-- XP after every mission.
+- Energy leaves after every adventure.
+- Three-leaf adventure ratings based on actual exercise time.
 - Badges for milestone and bonus achievements.
 - Future versions may add collectibles, avatar accessories, or forest items.
+
+## Timing Rules
+
+- Full energy leaves and 3 leaves are available from 85% of planned adventure time.
+- Below that threshold, energy leaves scale proportionally.
+- Very quick completions should not produce a maximum reward.
+- Actual time longer than the planned time grants 10 bonus energy leaves.
 
 ## First Chapter
 
 Name: Rainforest
 
-Prototype missions:
+Prototype adventures:
 
 - Canopy Warmup
 - Rainy Branches
 - Vine Path
+- Additional rainforest adventures up to 18 total
 
 Example exercise naming style:
 

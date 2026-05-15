@@ -18,7 +18,7 @@ Avoid:
 
 - Medical claims.
 - Competitive body language.
-- Shame-based streak copy.
+- Shame-based day-path copy.
 - Long technical explanations.
 
 ## Safety
@@ -29,3 +29,7 @@ Every content pass must preserve the safety message:
 - Do not force stretches.
 - Stop if there is pain.
 - Ask an adult when unsure.
+
+## Health Hints
+
+Health hints should read like friendly coaching, not warnings. Keep them short, practical, and calm. The UI uses a heart-style icon for this area, so copy should feel supportive rather than alarmed.
