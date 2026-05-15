@@ -8,10 +8,12 @@ import {
   Clock,
   Download,
   Footprints,
+  HeartPulse,
   Home,
   Languages,
   Leaf,
   Lock,
+  Play,
   RotateCcw,
   Settings,
   ShieldCheck,
@@ -50,6 +52,9 @@ const MISSION_COMPLETED_IMAGES = [
   assetPath('gibko-mission-completed-1.webp'),
   assetPath('gibko-mission-completed-2.webp'),
 ]
+const EXERCISE_MASCOT_IMAGES = [1, 2, 3, 4].map((index) =>
+  assetPath(`gibko-exercise-${index}.webp`),
+)
 const COMPLETION_IMAGE_STORAGE_KEY = 'gibko-completion-image-index'
 const EXPLORER_TITLE_STEP = 1000
 const EXPLORER_TITLES: LocalizedText[] = [
@@ -454,6 +459,11 @@ function MissionScreen({
     return () => window.clearInterval(intervalId)
   }, [activeExerciseStartedAt])
 
+  const exerciseMascotIndex = useMemo(
+    () => Math.floor(Math.random() * EXERCISE_MASCOT_IMAGES.length),
+    [missionId, exerciseIndex],
+  )
+
   if (!mission) {
     return null
   }
@@ -474,6 +484,7 @@ function MissionScreen({
   const isLastExercise = exerciseIndex === mission.exercises.length - 1
   const started = activeExerciseStartedAt !== null || startedExerciseIds.includes(exercise.id)
   const usedDifficultyHelp = difficultyHelpExerciseIds.includes(exercise.id)
+  const exerciseMascotSrc = EXERCISE_MASCOT_IMAGES[exerciseMascotIndex]
 
   const startExercise = () => {
     if (activeExerciseStartedAt) {
@@ -544,23 +555,45 @@ function MissionScreen({
         <button className="round-button" onClick={() => navigate('/map')} type="button">
           <ChevronLeft />
         </button>
-        <div className="mission-title-block">
-          <p className="eyebrow">
+        <div className="exercise-progress-header">
+          <strong>
             {exerciseIndex + 1} / {mission.exercises.length}
-          </p>
-          <h1>{localize(progress.locale, mission.title)}</h1>
+          </strong>
+          <div className="exercise-progress-strip" aria-hidden="true">
+            {mission.exercises.map((missionExercise, index) => (
+              <span
+                className={index <= exerciseIndex ? 'active' : ''}
+                key={`${missionExercise.id}-${index}`}
+              />
+            ))}
+          </div>
         </div>
       </header>
 
-      <section className="exercise-card">
-        <div className="exercise-card-header">
+      <section className="exercise-hero-panel">
+        <div className="exercise-mission-chip">
           <ExerciseIcon exercise={exercise} />
-          <div>
-            <h2>{localize(progress.locale, exercise.title)}</h2>
-            <p>{localize(progress.locale, exercise.description)}</p>
-          </div>
+          <span>{localize(progress.locale, mission.title)}</span>
         </div>
 
+        <div className="exercise-title-row">
+          <span className="exercise-spark spark-left" aria-hidden="true" />
+          <h1>{localize(progress.locale, exercise.title)}</h1>
+          <span className="exercise-spark spark-right" aria-hidden="true" />
+        </div>
+
+        <p className="exercise-description-card">
+          {localize(progress.locale, exercise.description)}
+        </p>
+
+        <div className="exercise-mascot-stage">
+          <span className="exercise-motion-mark mark-left" aria-hidden="true" />
+          <img className="exercise-mascot-art" src={exerciseMascotSrc} alt={translate('exercise.mascotAlt')} />
+          <span className="exercise-motion-mark mark-right" aria-hidden="true" />
+        </div>
+      </section>
+
+      <section className="exercise-card">
         <div className="exercise-details">
           <div>
             <Clock size={18} />
@@ -575,18 +608,24 @@ function MissionScreen({
         </div>
         {exercise.note && (
           <p className="exercise-note">
-            <ShieldCheck size={18} />
-            <span>
-              <strong>{translate('exercise.note')}</strong>
-              {localize(progress.locale, exercise.note)}
-            </span>
+            <HeartPulse size={18} />
+            <span>{localize(progress.locale, exercise.note)}</span>
           </p>
         )}
       </section>
 
       <section className="exercise-control-panel">
         <div className="exercise-timer" aria-live="polite">
+          <Clock size={18} />
           <span>{translate('exercise.timer')}</span>
+          <div className="exercise-timer-dots" aria-hidden="true">
+            {mission.exercises.map((missionExercise, index) => (
+              <i
+                className={index === exerciseIndex ? 'active' : ''}
+                key={`${missionExercise.id}-timer-${index}`}
+              />
+            ))}
+          </div>
           <strong>{formatDuration(elapsedSeconds)}</strong>
         </div>
 
@@ -597,7 +636,7 @@ function MissionScreen({
             onClick={startExercise}
             type="button"
           >
-            <Clock size={18} />
+            <Play size={18} />
             {translate('exercise.start')}
           </button>
           <button className="primary-action" disabled={!started} onClick={finishExercise} type="button">

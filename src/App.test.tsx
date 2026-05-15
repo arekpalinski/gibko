@@ -34,7 +34,8 @@ describe('mission flow', () => {
 
     fireEvent.click(await screen.findByRole('link', { name: 'Next adventure' }))
 
-    expect(await screen.findByRole('heading', { name: secondMission.title.en })).toBeInTheDocument()
+    expect(await screen.findByText(secondMission.title.en)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: secondMission.exercises[0].title.en })).toBeInTheDocument()
     expect(screen.getByText(`1 / ${secondMission.exercises.length}`)).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Adventure complete!' })).not.toBeInTheDocument()
   })

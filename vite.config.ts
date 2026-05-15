@@ -15,6 +15,10 @@ export default defineConfig({
         'assets/gibko-profile-avatar.webp',
         'assets/gibko-mission-completed-1.webp',
         'assets/gibko-mission-completed-2.webp',
+        'assets/gibko-exercise-1.webp',
+        'assets/gibko-exercise-2.webp',
+        'assets/gibko-exercise-3.webp',
+        'assets/gibko-exercise-4.webp',
       ],
       manifest: {
         name: 'Gibko',
