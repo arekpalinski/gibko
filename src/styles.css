@@ -1546,6 +1546,13 @@ input:focus {
   font-size: 0.86rem;
 }
 
+.text-link {
+  color: var(--cyan);
+  font-size: 0.86rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
 .badge-grid {
   display: grid;
   gap: 12px;
@@ -1579,6 +1586,66 @@ input:focus {
   display: grid;
   min-height: 66px;
   place-items: center;
+}
+
+.badges-screen {
+  align-content: start;
+  padding-bottom: 104px;
+}
+
+.all-badges-list {
+  display: grid;
+  gap: 12px;
+}
+
+.badge-detail {
+  align-items: center;
+  background: linear-gradient(135deg, rgba(17, 31, 50, 0.98), rgba(13, 25, 40, 0.96));
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 18px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 54px 1fr;
+  padding: 14px;
+}
+
+.badge-detail > svg {
+  background: rgba(22, 214, 194, 0.14);
+  border: 2px solid rgba(22, 214, 194, 0.72);
+  border-radius: 16px;
+  color: var(--cyan);
+  height: 54px;
+  padding: 12px;
+  width: 54px;
+}
+
+.badge-detail p {
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 0.84rem;
+  line-height: 1.35;
+  margin-top: 4px;
+}
+
+.badge-detail span {
+  color: var(--green);
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 950;
+  margin-top: 8px;
+  text-transform: uppercase;
+}
+
+.badge-detail.locked {
+  opacity: 0.62;
+}
+
+.badge-detail.locked > svg {
+  border-color: rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.badge-detail.locked span {
+  color: var(--muted);
 }
 
 .settings-list {

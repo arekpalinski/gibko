@@ -214,6 +214,45 @@ describe('progress logic', () => {
     expect(result.earnedBadgeIds).toContain('weekend-grove')
   })
 
+  it('awards the evening firefly badge after 18:00', () => {
+    const mission = chapters[0].missions[0]
+    const result = completeMission(createInitialProgress(), mission, 120, new Date('2026-05-12T18:00:00'))
+
+    expect(result.earnedBadgeIds).toContain('evening-firefly')
+    expect(result.progress.badgeIds).toContain('evening-firefly')
+  })
+
+  it('does not award the evening firefly badge before 18:00', () => {
+    const mission = chapters[0].missions[0]
+    const result = completeMission(createInitialProgress(), mission, 120, new Date('2026-05-12T17:59:00'))
+
+    expect(result.earnedBadgeIds).not.toContain('evening-firefly')
+    expect(result.progress.badgeIds).not.toContain('evening-firefly')
+  })
+
+  it('awards the returning gibbon badge after the second completed adventure', () => {
+    const firstMission = chapters[0].missions[0]
+    const secondMission = chapters[0].missions[1]
+    const firstResult = completeMission(createInitialProgress(), firstMission, 120, new Date('2026-05-12T12:00:00'))
+    const secondResult = completeMission(firstResult.progress, secondMission, 120, new Date('2026-05-12T13:00:00'))
+
+    expect(firstResult.earnedBadgeIds).not.toContain('second-adventure')
+    expect(secondResult.earnedBadgeIds).toContain('second-adventure')
+    expect(secondResult.progress.badgeIds).toContain('second-adventure')
+  })
+
+  it('awards the forest marathoner badge after twenty exercise minutes in one day', () => {
+    const firstMission = chapters[0].missions[0]
+    const secondMission = chapters[0].missions[1]
+    const firstResult = completeMission(createInitialProgress(), firstMission, 19 * 60, new Date('2026-05-12T12:00:00'))
+    const secondResult = completeMission(firstResult.progress, secondMission, 60, new Date('2026-05-12T13:00:00'))
+
+    expect(firstResult.earnedBadgeIds).not.toContain('daily-20-minutes')
+    expect(secondResult.progress.exerciseSecondsToday).toBe(20 * 60)
+    expect(secondResult.earnedBadgeIds).toContain('daily-20-minutes')
+    expect(secondResult.progress.badgeIds).toContain('daily-20-minutes')
+  })
+
   it('awards the streak badge after three active days in a row', () => {
     const mission = chapters[0].missions[0]
     const dayOne = completeMission(createInitialProgress(), mission, 120, new Date('2026-05-12T12:00:00'))

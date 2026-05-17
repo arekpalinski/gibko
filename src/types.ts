@@ -89,7 +89,7 @@ export type Badge = {
   id: string
   titleKey: string
   descriptionKey: string
-  icon: 'gibbon' | 'leaf' | 'sun' | 'calendar' | 'weekend'
+  icon: 'firefly' | 'footprints' | 'gibbon' | 'leaf' | 'sun' | 'calendar' | 'weekend'
 }
 
 export type Progress = {

@@ -1,8 +1,9 @@
 import '@testing-library/jest-dom/vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { App, getExplorerTitleProgress } from './App'
+import { badges } from './data/badges'
 import { chapters } from './data/chapters'
 import { createInitialProgress, saveProgress } from './state/progress'
 
@@ -32,6 +33,32 @@ describe('mission flow', () => {
       'href',
       `/chapter/${firstMission.chapterId}/adventure/${firstMission.slug}`,
     )
+  })
+
+  it('shows the install button only when the browser install prompt is available', async () => {
+    const prompt = vi.fn().mockResolvedValue(undefined)
+    const progress = {
+      ...createInitialProgress('en'),
+      acceptedSafety: true,
+      childName: 'Alex',
+    }
+    saveProgress(progress)
+
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <App />
+      </MemoryRouter>,
+    )
+
+    expect(screen.queryByRole('button', { name: 'Install Gibko' })).not.toBeInTheDocument()
+
+    const installEvent = new Event('beforeinstallprompt')
+    Object.defineProperty(installEvent, 'prompt', { value: prompt })
+    fireEvent(window, installEvent)
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Install Gibko' }))
+
+    expect(prompt).toHaveBeenCalledOnce()
   })
 
   it('links unlocked map nodes through the chapter adventure route', async () => {
@@ -150,6 +177,50 @@ describe('mission flow', () => {
 
     expect(await screen.findByRole('heading', { name: 'Finish the previous adventure first' })).toBeInTheDocument()
     expect(screen.queryByText(secondMission.title.en)).not.toBeInTheDocument()
+  })
+})
+
+describe('profile badges', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  it('links from the profile badge preview to all badges', async () => {
+    const progress = {
+      ...createInitialProgress('en'),
+      acceptedSafety: true,
+      childName: 'Alex',
+    }
+    saveProgress(progress)
+
+    render(
+      <MemoryRouter initialEntries={['/profile']}>
+        <App />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByRole('link', { name: 'See all →' })).toHaveAttribute('href', '/badges')
+  })
+
+  it('shows earned and locked badges on the full badges screen', async () => {
+    const progress = {
+      ...createInitialProgress('en'),
+      acceptedSafety: true,
+      badgeIds: ['morning-leaf'],
+      childName: 'Alex',
+    }
+    saveProgress(progress)
+
+    render(
+      <MemoryRouter initialEntries={['/badges']}>
+        <App />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByRole('heading', { name: 'Badges' })).toBeInTheDocument()
+    expect(screen.getByText('Morning Leaf')).toBeInTheDocument()
+    expect(screen.getByText('Unlocked')).toBeInTheDocument()
+    expect(screen.getAllByText('To discover')).toHaveLength(badges.length - 1)
   })
 })
 

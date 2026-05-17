@@ -161,6 +161,7 @@ export function App() {
             }
           />
           <Route path="/profile" element={<ProfileScreen progress={progress} translate={translate} />} />
+          <Route path="/badges" element={<BadgesScreen progress={progress} translate={translate} />} />
           <Route
             path="/settings"
             element={<SettingsScreen progress={progress} setProgress={setProgress} translate={translate} />}
@@ -878,7 +879,9 @@ function ProfileScreen({
       <section>
         <div className="section-heading">
           <h3>{translate('stats.badges')}</h3>
-          <span>{translate('profile.seeAll')} →</span>
+          <Link className="text-link" to="/badges">
+            {translate('profile.seeAll')} →
+          </Link>
         </div>
         <div className="badge-grid">
           {earnedBadges.length ? (
@@ -887,6 +890,43 @@ function ProfileScreen({
             badges.map((badge) => <BadgeIcon badge={badge} key={badge.id} translate={translate} />)
           )}
         </div>
+      </section>
+    </Screen>
+  )
+}
+
+function BadgesScreen({
+  progress,
+  translate,
+}: {
+  progress: Progress
+  translate: (key: string, values?: Record<string, string | number>) => string
+}) {
+  return (
+    <Screen className="badges-screen">
+      <header className="center-title-row">
+        <Link className="round-button" to="/profile">
+          <ChevronLeft />
+        </Link>
+        <h1>{translate('badges.title')}</h1>
+        <span />
+      </header>
+
+      <section className="all-badges-list">
+        {badges.map((badge) => {
+          const earned = progress.badgeIds.includes(badge.id)
+
+          return (
+            <article className={`badge-detail ${earned ? 'earned' : 'locked'}`} key={badge.id}>
+              <BadgeGlyph badge={badge} />
+              <div>
+                <strong>{translate(badge.titleKey)}</strong>
+                <p>{translate(badge.descriptionKey)}</p>
+                <span>{earned ? translate('badges.unlocked') : translate('badges.locked')}</span>
+              </div>
+            </article>
+          )
+        })}
       </section>
     </Screen>
   )
@@ -1114,6 +1154,8 @@ function BadgeIcon({ badge, translate }: { badge: Badge; translate: (key: string
 function BadgeGlyph({ badge }: { badge: Badge }) {
   const iconMap = {
     calendar: CalendarDays,
+    firefly: Sparkles,
+    footprints: Footprints,
     gibbon: Award,
     leaf: Leaf,
     sun: Sun,

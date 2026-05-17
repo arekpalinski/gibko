@@ -72,10 +72,14 @@ export function completeMission(
   const completedMissionIds = alreadyCompleted
     ? progress.completedMissionIds
     : [...progress.completedMissionIds, mission.id]
+  const exerciseSecondsToday =
+    progress.lastActiveDate === today
+      ? progress.exerciseSecondsToday + actualSeconds
+      : actualSeconds
 
   const unlockedMissionIds = unlockNextMission(progress.unlockedMissionIds, mission.id)
   const earnedBadgeIds = getEarnedBadges(
-    { ...progress, completedMissionIds, streakDays },
+    { ...progress, completedMissionIds, exerciseSecondsToday, streakDays },
     mission,
     now,
   )
@@ -96,10 +100,7 @@ export function completeMission(
       xp: progress.xp + xpEarned,
       streakDays,
       lastActiveDate: today,
-      exerciseSecondsToday:
-        progress.lastActiveDate === today
-          ? progress.exerciseSecondsToday + actualSeconds
-          : actualSeconds,
+      exerciseSecondsToday,
       totalExerciseSeconds: progress.totalExerciseSeconds + actualSeconds,
       completedMissionIds,
       missionStars,
@@ -182,6 +183,18 @@ function getEarnedBadges(progress: Progress, mission: Mission, now: Date) {
 
   if (hour < 10 && !progress.badgeIds.includes('morning-leaf')) {
     earned.push('morning-leaf')
+  }
+
+  if (hour >= 18 && !progress.badgeIds.includes('evening-firefly')) {
+    earned.push('evening-firefly')
+  }
+
+  if (progress.completedMissionIds.length >= 2 && !progress.badgeIds.includes('second-adventure')) {
+    earned.push('second-adventure')
+  }
+
+  if (progress.exerciseSecondsToday >= 20 * 60 && !progress.badgeIds.includes('daily-20-minutes')) {
+    earned.push('daily-20-minutes')
   }
 
   if (progress.streakDays >= 3 && !progress.badgeIds.includes('streak-3')) {
