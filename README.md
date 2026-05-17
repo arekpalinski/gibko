@@ -11,7 +11,7 @@ The goal is not to make a serious fitness tracker. Gibko should feel like a smal
 - A locally stored child profile with name, language, and safety acceptance.
 - Polish UI by default, with English available as a secondary language.
 - A rainforest chapter with 18 data-driven adventures.
-- Exercise screens with estimated time, repetitions, health hints, visible timers, and Gibko exercise illustrations.
+- Exercise variants stored separately from adventures, each with estimated time, repetitions, equipment, energy leaves, categories, health hints, and optional challenge options.
 - Energy leaves awarded from real exercise time: full reward at 85% of planned time, proportional rewards below that, and a small bonus for going longer than planned.
 - Three-leaf adventure ratings based on the same real-time logic.
 - A map, profile, settings, install prompt, PWA manifest, and offline app shell.

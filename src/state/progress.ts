@@ -146,7 +146,7 @@ export function calculateMissionCompletionRatio(mission: Mission, actualSeconds:
 
 export function getMissionPlannedSeconds(mission: Mission) {
   return (
-    mission.exercises.reduce((sum, exercise) => sum + exercise.minutes * 60, 0) ||
+    mission.exercises.reduce((sum, exercise) => sum + exercise.estimatedMinutes * 60, 0) ||
     mission.estimatedMinutes * 60
   )
 }

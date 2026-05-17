@@ -18,23 +18,21 @@ export type ExerciseIcon =
   | 'river'
   | 'vine'
 
-export type ExerciseDefinition = {
-  id: string
-  title: LocalizedText
-  icon: ExerciseIcon
-  equipment?: Equipment[]
-}
+export type ExerciseCategory = string
 
 export type Exercise = {
   id: string
-  exerciseId: string
   title: LocalizedText
+  icon: ExerciseIcon
   description: LocalizedText
-  durationLabel: LocalizedText
+  estimatedMinutes: number
+  estimatedTimeLabel: LocalizedText
   repetitions: LocalizedText
   note?: LocalizedText
-  icon: ExerciseIcon
-  minutes: number
+  challengeOption?: LocalizedText
+  equipment: Equipment[]
+  energyLeaves: number
+  categories: ExerciseCategory[]
 }
 
 export type Mission = {
@@ -43,10 +41,11 @@ export type Mission = {
   title: LocalizedText
   teaser: LocalizedText
   goal: LocalizedText
+  exerciseIds: string[]
   equipment: Equipment[]
   xp: number
   estimatedMinutes: number
-  durationLabel: LocalizedText
+  estimatedTimeLabel: LocalizedText
   exercises: Exercise[]
 }
 

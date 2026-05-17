@@ -22,8 +22,8 @@ Gibko helps kids build a light stretching habit through playful adventures with 
 ## Content Model
 
 - Chapter: a themed forest area such as Rainforest.
-- Adventure: a short session made of several exercises.
-- Exercise: one simple movement with a playful name and short instruction.
+- Adventure: a short session that references exercise variants and keeps its own title, teaser, and goal.
+- Exercise variant: one concrete movement variant with localized title, description, estimated time, repetitions, optional health hint, optional challenge option, equipment, energy leaves, and categories.
 - Badge: a reward for chapter completion or special behavior.
 
 Future chapters should contain around 10-30 adventures each.
@@ -32,7 +32,9 @@ The code currently still uses the `Mission` type for adventures. Prefer user-fac
 
 ## Prototype Scope
 
-The first prototype includes one rainforest chapter with 18 adventures. Exercise content is data-driven so movements can be reused in later chapters while chapter-specific titles, descriptions, timing, repetitions, and health hints can stay playful.
+The first prototype includes one rainforest chapter with 18 adventures. Exercise variants live in `src/data/exercises.ts`, while adventures reference them from `src/data/chapters.ts`.
+
+Adventure energy leaves, estimated minutes, estimated time labels, and equipment are derived from the referenced exercises. Categories are currently empty arrays, ready for a later content pass.
 
 ## Reward Model
 

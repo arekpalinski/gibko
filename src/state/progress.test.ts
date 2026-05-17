@@ -123,7 +123,7 @@ describe('progress logic', () => {
 
   it('scores three stars for a steady full mission without difficulty help', () => {
     const mission = chapters[0].missions[0]
-    const plannedSeconds = mission.exercises.reduce((sum, exercise) => sum + exercise.minutes * 60, 0)
+    const plannedSeconds = mission.exercises.reduce((sum, exercise) => sum + exercise.estimatedMinutes * 60, 0)
 
     expect(calculateMissionStars(mission, plannedSeconds, false)).toBe(3)
   })

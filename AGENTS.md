@@ -34,6 +34,9 @@ Gibko is a playful Progressive Web App for kids. It encourages gentle stretching
 - Use Vite, React, TypeScript, and plain CSS.
 - Keep game content data-driven so future chapters and forests can be added without rewriting app flow.
 - User-facing "adventures" may still be represented as `Mission` in code until the internal model is renamed.
+- Keep full exercise variants in `src/data/exercises.ts`; adventures in `src/data/chapters.ts` should reference them by `exerciseIds`.
+- Adventure energy leaves, estimated minutes, estimated time labels, and equipment are derived from referenced exercises.
+- Exercise categories already exist as `categories`; keep them as arrays even when empty.
 - Prefer small, focused modules.
 - Use `localStorage` for prototype progress.
 - Keep GitHub Pages compatibility. The Vite base path is `/gibko/`.

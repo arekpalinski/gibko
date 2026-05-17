@@ -17,6 +17,7 @@ import {
   RotateCcw,
   Settings,
   ShieldCheck,
+  Sparkles,
   Sun,
   TreePine,
   User,
@@ -601,7 +602,7 @@ function MissionScreen({
           <div>
             <Clock size={18} />
             <span>{translate('exercise.estimatedTime')}</span>
-            <strong>{localize(progress.locale, exercise.durationLabel)}</strong>
+            <strong>{localize(progress.locale, exercise.estimatedTimeLabel)}</strong>
           </div>
           <div>
             <RotateCcw size={18} />
@@ -613,6 +614,12 @@ function MissionScreen({
           <p className="exercise-note">
             <HeartPulse size={18} />
             <span>{localize(progress.locale, exercise.note)}</span>
+          </p>
+        )}
+        {exercise.challengeOption && (
+          <p className="exercise-challenge">
+            <Sparkles size={18} />
+            <span>{localize(progress.locale, exercise.challengeOption)}</span>
           </p>
         )}
       </section>
@@ -974,7 +981,7 @@ function MissionMeta({
 }) {
   return (
     <div className="mission-meta">
-      <span>{localize(locale, mission.durationLabel)}</span>
+      <span>{localize(locale, mission.estimatedTimeLabel)}</span>
       <span className="energy-leaves-pill">
         +{mission.xp}
         <Leaf size={14} />

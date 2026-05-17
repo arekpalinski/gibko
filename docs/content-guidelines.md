@@ -33,3 +33,7 @@ Every content pass must preserve the safety message:
 ## Health Hints
 
 Health hints should read like friendly coaching, not warnings. Keep them short, practical, and calm. The UI uses a heart-style icon for this area, so copy should feel supportive rather than alarmed.
+
+## Challenge Options
+
+Use `challengeOption` for optional harder variants such as "Spicy version" copy. These are invitations for kids who feel ready, not required steps for completing an adventure.
