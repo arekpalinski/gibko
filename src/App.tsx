@@ -283,7 +283,7 @@ function HomeScreen({
   )
 
   return (
-    <Screen>
+    <Screen className="home-screen">
       <header className="top-row">
         <Wordmark />
         {canInstall ? (

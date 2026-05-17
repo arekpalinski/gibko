@@ -87,6 +87,10 @@ a {
   width: 0;
 }
 
+.home-screen {
+  align-content: start;
+}
+
 .centered {
   align-content: center;
   justify-items: center;
@@ -552,13 +556,13 @@ input:focus {
 }
 
 .mission-card {
-  align-items: stretch;
+  align-items: start;
   display: grid;
-  gap: 10px;
+  gap: 8px;
   grid-template-columns: 1fr 150px;
-  min-height: 186px;
+  min-height: 0;
   overflow: hidden;
-  padding: 18px 16px 24px 18px;
+  padding: 18px 16px 14px 18px;
 }
 
 .mission-card h2 {
@@ -566,7 +570,8 @@ input:focus {
 }
 
 .mission-card .primary-action {
-  margin-top: 14px;
+  display: flex;
+  margin-top: 12px;
   width: 100%;
 }
 
@@ -1801,8 +1806,7 @@ input:focus {
 
   .mission-card {
     grid-template-columns: 1fr 136px;
-    min-height: 0;
-    padding: 16px 14px 22px 16px;
+    padding: 16px 14px 14px 16px;
   }
 
   .mission-card h2 {
@@ -1889,7 +1893,7 @@ input:focus {
 
   .mission-card {
     grid-template-columns: 1fr 118px;
-    padding-bottom: 18px;
+    padding-bottom: 12px;
   }
 
   .mission-card h2 {
