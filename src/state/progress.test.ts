@@ -84,12 +84,13 @@ describe('progress logic', () => {
     expect(result.starsEarned).toBe(3)
   })
 
-  it('keeps a gentle daily streak for consecutive days', () => {
+  it('counts unique active days without requiring consecutive days', () => {
     const mission = chapters[0].missions[0]
     const dayOne = completeMission(createInitialProgress(), mission, 30, new Date('2026-05-12T12:00:00'))
-    const dayTwo = completeMission(dayOne.progress, mission, 45, new Date('2026-05-13T12:00:00'))
+    const dayTwo = completeMission(dayOne.progress, mission, 45, new Date('2026-05-14T12:00:00'))
 
     expect(dayTwo.progress.streakDays).toBe(2)
+    expect(dayTwo.progress.consecutiveActiveDays).toBe(1)
     expect(dayTwo.progress.exerciseSecondsToday).toBe(45)
     expect(dayTwo.progress.totalExerciseSeconds).toBe(75)
   })
@@ -113,6 +114,7 @@ describe('progress logic', () => {
     expect(secondResult.progress.exerciseSecondsToday).toBe(300)
     expect(secondResult.progress.totalExerciseSeconds).toBe(300)
     expect(secondResult.progress.streakDays).toBe(1)
+    expect(secondResult.progress.consecutiveActiveDays).toBe(1)
   })
 
   it('scores one star when the child used the too-hard help', () => {
@@ -253,6 +255,18 @@ describe('progress logic', () => {
     expect(secondResult.progress.badgeIds).toContain('daily-20-minutes')
   })
 
+  it('does not award the streak badge after three active days with gaps', () => {
+    const mission = chapters[0].missions[0]
+    const dayOne = completeMission(createInitialProgress(), mission, 120, new Date('2026-05-12T12:00:00'))
+    const dayTwo = completeMission(dayOne.progress, mission, 120, new Date('2026-05-15T12:00:00'))
+    const dayThree = completeMission(dayTwo.progress, mission, 120, new Date('2026-05-18T12:00:00'))
+
+    expect(dayThree.progress.streakDays).toBe(3)
+    expect(dayThree.progress.consecutiveActiveDays).toBe(1)
+    expect(dayThree.earnedBadgeIds).not.toContain('streak-3')
+    expect(dayThree.progress.badgeIds).not.toContain('streak-3')
+  })
+
   it('awards the streak badge after three active days in a row', () => {
     const mission = chapters[0].missions[0]
     const dayOne = completeMission(createInitialProgress(), mission, 120, new Date('2026-05-12T12:00:00'))
@@ -260,6 +274,7 @@ describe('progress logic', () => {
     const dayThree = completeMission(dayTwo.progress, mission, 120, new Date('2026-05-14T12:00:00'))
 
     expect(dayThree.progress.streakDays).toBe(3)
+    expect(dayThree.progress.consecutiveActiveDays).toBe(3)
     expect(dayThree.earnedBadgeIds).toContain('streak-3')
     expect(dayThree.progress.badgeIds).toContain('streak-3')
   })
@@ -288,6 +303,7 @@ describe('progress logic', () => {
     const loadedProgress = loadProgress()
 
     expect(loadedProgress.childName).toBe('Ola')
+    expect(loadedProgress.consecutiveActiveDays).toBe(1)
     expect(loadedProgress.missionStars).toEqual({})
     expect(loadedProgress.unlockedMissionIds).toContain(chapters[0].missions[0].id)
     expect(loadedProgress.unlockedMissionIds).toContain(chapters[0].missions[3].id)
@@ -297,6 +313,7 @@ describe('progress logic', () => {
     const progress = createInitialProgress('en')
 
     expect(progress.locale).toBe('en')
+    expect(progress.consecutiveActiveDays).toBe(0)
     expect(progress.unlockedMissionIds).toEqual([chapters[0].missions[0].id])
     expect(progress.acceptedSafety).toBe(false)
   })

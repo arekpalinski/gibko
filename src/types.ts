@@ -97,6 +97,7 @@ export type Progress = {
   locale: Locale
   xp: number
   streakDays: number
+  consecutiveActiveDays: number
   lastActiveDate: string | null
   exerciseSecondsToday: number
   totalExerciseSeconds: number

@@ -11,6 +11,7 @@ export function createInitialProgress(locale: Locale = 'pl'): Progress {
     locale,
     xp: 0,
     streakDays: 0,
+    consecutiveActiveDays: 0,
     lastActiveDate: null,
     exerciseSecondsToday: 0,
     totalExerciseSeconds: 0,
@@ -30,7 +31,13 @@ export function loadProgress(): Progress {
 
   try {
     const parsed = JSON.parse(raw) as Partial<Progress>
-    return normalizeProgress({ ...createInitialProgress(parsed.locale), ...parsed } as Progress)
+    const progress = { ...createInitialProgress(parsed.locale), ...parsed } as Progress
+
+    if (!('consecutiveActiveDays' in parsed)) {
+      progress.consecutiveActiveDays = parsed.lastActiveDate ? 1 : 0
+    }
+
+    return normalizeProgress(progress)
   } catch {
     return createInitialProgress()
   }
@@ -62,11 +69,19 @@ export function completeMission(
   const today = toDateKey(now)
   const yesterday = toDateKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1))
   const alreadyCompleted = progress.completedMissionIds.includes(mission.id)
+  const activeDayCount = Math.max(0, progress.streakDays)
+  const previousConsecutiveActiveDays = progress.lastActiveDate
+    ? Math.max(1, progress.consecutiveActiveDays)
+    : 0
   const streakDays =
     progress.lastActiveDate === today
-      ? progress.streakDays
+      ? Math.max(1, activeDayCount)
+      : activeDayCount + 1
+  const consecutiveActiveDays =
+    progress.lastActiveDate === today
+      ? Math.max(1, previousConsecutiveActiveDays)
       : progress.lastActiveDate === yesterday
-        ? progress.streakDays + 1
+        ? previousConsecutiveActiveDays + 1
         : 1
 
   const completedMissionIds = alreadyCompleted
@@ -79,7 +94,7 @@ export function completeMission(
 
   const unlockedMissionIds = unlockNextMission(progress.unlockedMissionIds, mission.id)
   const earnedBadgeIds = getEarnedBadges(
-    { ...progress, completedMissionIds, exerciseSecondsToday, streakDays },
+    { ...progress, completedMissionIds, consecutiveActiveDays, exerciseSecondsToday, streakDays },
     mission,
     now,
   )
@@ -99,6 +114,7 @@ export function completeMission(
       ...progress,
       xp: progress.xp + xpEarned,
       streakDays,
+      consecutiveActiveDays,
       lastActiveDate: today,
       exerciseSecondsToday,
       totalExerciseSeconds: progress.totalExerciseSeconds + actualSeconds,
@@ -197,7 +213,7 @@ function getEarnedBadges(progress: Progress, mission: Mission, now: Date) {
     earned.push('daily-20-minutes')
   }
 
-  if (progress.streakDays >= 3 && !progress.badgeIds.includes('streak-3')) {
+  if (progress.consecutiveActiveDays >= 3 && !progress.badgeIds.includes('streak-3')) {
     earned.push('streak-3')
   }
 
@@ -211,6 +227,7 @@ function getEarnedBadges(progress: Progress, mission: Mission, now: Date) {
 function normalizeProgress(progress: Progress): Progress {
   const normalized = {
     ...progress,
+    consecutiveActiveDays: progress.consecutiveActiveDays ?? (progress.lastActiveDate ? 1 : 0),
     missionStars: progress.missionStars ?? {},
   }
 
