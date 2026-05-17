@@ -1669,32 +1669,6 @@ input:focus {
   gap: 14px;
 }
 
-.toggle-row {
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-  min-height: 44px;
-}
-
-.fake-toggle {
-  background: var(--cyan);
-  border-radius: 999px;
-  height: 30px;
-  position: relative;
-  width: 52px;
-}
-
-.fake-toggle::after {
-  background: white;
-  border-radius: 50%;
-  content: "";
-  height: 22px;
-  position: absolute;
-  right: 4px;
-  top: 4px;
-  width: 22px;
-}
-
 .muted {
   color: var(--muted);
 }

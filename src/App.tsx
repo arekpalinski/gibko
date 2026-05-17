@@ -955,19 +955,6 @@ function SettingsScreen({
         <p className="section-label">{translate('settings.language')}</p>
         <LanguageChoices progress={progress} setProgress={setProgress} />
 
-        <div className="toggle-row">
-          <span>{translate('settings.sounds')}</span>
-          <span className="fake-toggle" />
-        </div>
-        <div className="toggle-row">
-          <span>{translate('settings.notifications')}</span>
-          <span className="fake-toggle" />
-        </div>
-        <div className="toggle-row">
-          <span>{translate('settings.theme')}</span>
-          <span className="muted">{translate('settings.themeDark')} ›</span>
-        </div>
-
         <div className="safety-note">
           <ShieldCheck size={20} />
           <div>
