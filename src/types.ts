@@ -18,7 +18,33 @@ export type ExerciseIcon =
   | 'river'
   | 'vine'
 
-export type ExerciseCategory = string
+export type ExerciseCategory =
+  | 'ankles'
+  | 'back'
+  | 'balance'
+  | 'boneStrength'
+  | 'breathing'
+  | 'calm'
+  | 'calves'
+  | 'chest'
+  | 'control'
+  | 'coordination'
+  | 'core'
+  | 'energy'
+  | 'feet'
+  | 'fullBody'
+  | 'glutes'
+  | 'hips'
+  | 'legs'
+  | 'mobility'
+  | 'neck'
+  | 'posture'
+  | 'recovery'
+  | 'sensory'
+  | 'shoulders'
+  | 'strength'
+  | 'stretching'
+  | 'warmup'
 
 export type Exercise = {
   id: string
@@ -37,6 +63,8 @@ export type Exercise = {
 
 export type Mission = {
   id: string
+  number: number
+  slug: string
   chapterId: string
   title: LocalizedText
   teaser: LocalizedText

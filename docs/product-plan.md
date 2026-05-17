@@ -34,7 +34,11 @@ The code currently still uses the `Mission` type for adventures. Prefer user-fac
 
 The first prototype includes one rainforest chapter with 18 adventures. Exercise variants live in `src/data/exercises.ts`, while adventures reference them from `src/data/chapters.ts`.
 
-Adventure energy leaves, estimated minutes, estimated time labels, and equipment are derived from the referenced exercises. Categories are currently empty arrays, ready for a later content pass.
+Adventure energy leaves, estimated minutes, estimated time labels, and equipment are derived from the referenced exercises. Categories live on reusable exercise variants and are multi-value so future optional adventures can filter by body area or movement goal.
+
+Adventure URLs include the chapter and adventure slug, for example `#/chapter/rainforest/adventure/canopy-warmup`, so future chapters can add their own adventure paths without colliding.
+
+Debug URLs may use 1-based numeric aliases, for example `#/chapter/1/adventure/5?ex=2`, to jump to a specific adventure and exercise during development. These aliases should follow the same lock rules as normal adventure URLs.
 
 ## Reward Model
 

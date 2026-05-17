@@ -141,6 +141,16 @@ export function App() {
           />
           <Route path="/map" element={<MapScreen progress={progress} translate={translate} />} />
           <Route
+            path="/chapter/:chapterId/adventure/:adventureSlug"
+            element={
+              <MissionScreen
+                progress={progress}
+                setProgress={setProgress}
+                translate={translate}
+              />
+            }
+          />
+          <Route
             path="/mission/:missionId"
             element={
               <MissionScreen
@@ -300,7 +310,7 @@ function HomeScreen({
           <p className="eyebrow">{translate('home.dailyMission')}</p>
           <h2>{localize(progress.locale, nextAdventure.title)}</h2>
           <MissionMeta locale={progress.locale} mission={nextAdventure} />
-          <Link className="primary-action" to={`/mission/${nextAdventure.id}`}>
+          <Link className="primary-action" to={getAdventurePath(nextAdventure)}>
             {isMissionCompleted(progress, nextAdventure.id)
               ? translate('mission.repeat')
               : translate('mission.start')}
@@ -417,9 +427,12 @@ function MissionScreen({
   setProgress: (progress: Progress) => void
   translate: (key: string, values?: Record<string, string | number>) => string
 }) {
-  const { missionId } = useParams()
+  const { adventureSlug, chapterId, missionId } = useParams()
+  const location = useLocation()
   const navigate = useNavigate()
-  const mission = chapters.flatMap((chapter) => chapter.missions).find((candidate) => candidate.id === missionId)
+  const mission = findAdventureByRoute({ adventureSlug, chapterId, missionId })
+  const initialExerciseIndex = getInitialExerciseIndex(location.search, mission)
+  const routeKey = `${missionId ?? `${chapterId ?? ''}/${adventureSlug ?? ''}`}${location.search}`
   const [exerciseIndex, setExerciseIndex] = useState(0)
   const [startedExerciseIds, setStartedExerciseIds] = useState<string[]>([])
   const [difficultyHelpExerciseIds, setDifficultyHelpExerciseIds] = useState<string[]>([])
@@ -435,7 +448,7 @@ function MissionScreen({
   const [missionDone, setMissionDone] = useState(false)
 
   useEffect(() => {
-    setExerciseIndex(0)
+    setExerciseIndex(initialExerciseIndex)
     setStartedExerciseIds([])
     setDifficultyHelpExerciseIds([])
     setSkipHint(false)
@@ -448,7 +461,7 @@ function MissionScreen({
     setElapsedSeconds(0)
     setMissionSeconds(0)
     setMissionDone(false)
-  }, [missionId])
+  }, [initialExerciseIndex, routeKey])
 
   useEffect(() => {
     if (!activeExerciseStartedAt) {
@@ -464,7 +477,7 @@ function MissionScreen({
 
   const exerciseMascotIndex = useMemo(
     () => Math.floor(Math.random() * EXERCISE_MASCOT_IMAGES.length),
-    [missionId, exerciseIndex],
+    [routeKey, exerciseIndex],
   )
 
   if (!mission) {
@@ -704,7 +717,7 @@ function Summary({
         <BadgePill badge={badge} key={badge.id} translate={translate} />
       ))}
       {nextAdventureId && (
-        <Link className="primary-action wide" to={`/mission/${nextAdventureId}`}>
+        <Link className="primary-action wide" to={getAdventurePathById(nextAdventureId)}>
           {translate('summary.nextAdventure')}
           <ChevronRight size={20} />
         </Link>
@@ -720,6 +733,65 @@ function findNextAdventure(progress: Progress) {
   return chapters
     .flatMap((chapter) => chapter.missions)
     .find((mission) => isMissionUnlocked(progress, mission.id) && !isMissionCompleted(progress, mission.id))
+}
+
+function findAdventureByRoute({
+  adventureSlug,
+  chapterId,
+  missionId,
+}: {
+  adventureSlug?: string
+  chapterId?: string
+  missionId?: string
+}) {
+  if (missionId) {
+    return chapters.flatMap((chapter) => chapter.missions).find((candidate) => candidate.id === missionId)
+  }
+
+  const chapterNumber = parsePositiveInteger(chapterId)
+  const chapter = chapterNumber
+    ? chapters[chapterNumber - 1]
+    : chapters.find((candidate) => candidate.id === chapterId)
+
+  const adventureNumber = parsePositiveInteger(adventureSlug)
+
+  return adventureNumber
+    ? chapter?.missions.find((candidate) => candidate.number === adventureNumber)
+    : chapter?.missions.find((candidate) => candidate.slug === adventureSlug)
+}
+
+function getAdventurePath(mission: Mission) {
+  return `/chapter/${mission.chapterId}/adventure/${mission.slug}`
+}
+
+function getInitialExerciseIndex(search: string, mission?: Mission) {
+  if (!mission) {
+    return 0
+  }
+
+  const exerciseNumber = parsePositiveInteger(new URLSearchParams(search).get('ex'))
+
+  if (!exerciseNumber) {
+    return 0
+  }
+
+  return Math.min(exerciseNumber - 1, mission.exercises.length - 1)
+}
+
+function parsePositiveInteger(value: string | null | undefined) {
+  if (!value || !/^\d+$/.test(value)) {
+    return null
+  }
+
+  const parsed = Number(value)
+
+  return parsed > 0 ? parsed : null
+}
+
+function getAdventurePathById(missionId: string) {
+  const mission = chapters.flatMap((chapter) => chapter.missions).find((candidate) => candidate.id === missionId)
+
+  return mission ? getAdventurePath(mission) : '/'
 }
 
 function findFirstUnlockedAdventure(progress: Progress) {
@@ -1154,7 +1226,7 @@ function MapNode({
   return (
     <div className="map-node-wrap" style={{ left: position.x, top: position.y }}>
       {mission && unlocked ? (
-        <Link aria-label={localize(locale, mission.title)} to={`/mission/${mission.id}`}>
+        <Link aria-label={localize(locale, mission.title)} to={getAdventurePath(mission)}>
           {content}
         </Link>
       ) : (

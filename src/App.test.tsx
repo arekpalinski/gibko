@@ -11,9 +11,89 @@ describe('mission flow', () => {
     localStorage.clear()
   })
 
+  it('links the home adventure card through the chapter adventure route', async () => {
+    const firstMission = chapters[0].missions[0]
+    const progress = {
+      ...createInitialProgress('en'),
+      acceptedSafety: true,
+      childName: 'Alex',
+    }
+    saveProgress(progress)
+
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <App />
+      </MemoryRouter>,
+    )
+
+    const startLink = await screen.findByRole('link', { name: 'Start' })
+
+    expect(startLink).toHaveAttribute(
+      'href',
+      `/chapter/${firstMission.chapterId}/adventure/${firstMission.slug}`,
+    )
+  })
+
+  it('links unlocked map nodes through the chapter adventure route', async () => {
+    const firstMission = chapters[0].missions[0]
+    const progress = {
+      ...createInitialProgress('en'),
+      acceptedSafety: true,
+      childName: 'Alex',
+    }
+    saveProgress(progress)
+
+    render(
+      <MemoryRouter initialEntries={['/map']}>
+        <App />
+      </MemoryRouter>,
+    )
+
+    const mapNodeLink = await screen.findByRole('link', { name: firstMission.title.en })
+
+    expect(mapNodeLink).toHaveAttribute(
+      'href',
+      `/chapter/${firstMission.chapterId}/adventure/${firstMission.slug}`,
+    )
+  })
+
   it('opens the next adventure at its first exercise from the completion screen', async () => {
     const firstMission = chapters[0].missions[0]
     const secondMission = chapters[0].missions[1]
+    const progress = {
+      ...createInitialProgress('en'),
+      acceptedSafety: true,
+      childName: 'Alex',
+    }
+    saveProgress(progress)
+
+    render(
+      <MemoryRouter initialEntries={[`/chapter/${firstMission.chapterId}/adventure/${firstMission.slug}`]}>
+        <App />
+      </MemoryRouter>,
+    )
+
+    for (let index = 0; index < firstMission.exercises.length; index += 1) {
+      fireEvent.click(await screen.findByRole('button', { name: 'Start' }))
+      fireEvent.click(await screen.findByRole('button', { name: 'Done' }))
+    }
+
+    expect(await screen.findByText('You earn +0 energy leaves')).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: 'Next adventure' })).toHaveAttribute(
+      'href',
+      `/chapter/${secondMission.chapterId}/adventure/${secondMission.slug}`,
+    )
+
+    fireEvent.click(await screen.findByRole('link', { name: 'Next adventure' }))
+
+    expect(await screen.findByText(secondMission.title.en)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: secondMission.exercises[0].title.en })).toBeInTheDocument()
+    expect(screen.getByText(`1 / ${secondMission.exercises.length}`)).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Adventure complete!' })).not.toBeInTheDocument()
+  })
+
+  it('keeps legacy mission URLs working while using chapter adventure URLs', async () => {
+    const firstMission = chapters[0].missions[0]
     const progress = {
       ...createInitialProgress('en'),
       acceptedSafety: true,
@@ -27,19 +107,49 @@ describe('mission flow', () => {
       </MemoryRouter>,
     )
 
-    for (let index = 0; index < firstMission.exercises.length; index += 1) {
-      fireEvent.click(await screen.findByRole('button', { name: 'Start' }))
-      fireEvent.click(await screen.findByRole('button', { name: 'Done' }))
+    expect(await screen.findByText(firstMission.title.en)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: firstMission.exercises[0].title.en })).toBeInTheDocument()
+  })
+
+  it('opens numeric debug adventure routes and optional exercise numbers', async () => {
+    const firstMission = chapters[0].missions[0]
+    const secondMission = chapters[0].missions[1]
+    const progress = {
+      ...createInitialProgress('en'),
+      acceptedSafety: true,
+      childName: 'Alex',
+      unlockedMissionIds: [firstMission.id, secondMission.id],
     }
+    saveProgress(progress)
 
-    expect(await screen.findByText('You earn +0 energy leaves')).toBeInTheDocument()
-
-    fireEvent.click(await screen.findByRole('link', { name: 'Next adventure' }))
+    render(
+      <MemoryRouter initialEntries={['/chapter/1/adventure/2?ex=2']}>
+        <App />
+      </MemoryRouter>,
+    )
 
     expect(await screen.findByText(secondMission.title.en)).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: secondMission.exercises[0].title.en })).toBeInTheDocument()
-    expect(screen.getByText(`1 / ${secondMission.exercises.length}`)).toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'Adventure complete!' })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: secondMission.exercises[1].title.en })).toBeInTheDocument()
+    expect(screen.getByText(`2 / ${secondMission.exercises.length}`)).toBeInTheDocument()
+  })
+
+  it('does not let numeric debug routes bypass locked adventures', async () => {
+    const secondMission = chapters[0].missions[1]
+    const progress = {
+      ...createInitialProgress('en'),
+      acceptedSafety: true,
+      childName: 'Alex',
+    }
+    saveProgress(progress)
+
+    render(
+      <MemoryRouter initialEntries={['/chapter/1/adventure/2?ex=2']}>
+        <App />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByRole('heading', { name: 'Finish the previous adventure first' })).toBeInTheDocument()
+    expect(screen.queryByText(secondMission.title.en)).not.toBeInTheDocument()
   })
 })
 

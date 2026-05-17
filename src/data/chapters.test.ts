@@ -1,10 +1,30 @@
 import { describe, expect, it } from 'vitest'
+import type { Exercise } from '../types'
 import { chapters } from './chapters'
 import { exerciseLibrary } from './exercises'
 
 describe('chapter content', () => {
   it('keeps the first rainforest chapter at eighteen missions', () => {
     expect(chapters[0].missions).toHaveLength(18)
+  })
+
+  it('derives stable adventure ids from chapter order and slugs', () => {
+    const adventureIds = new Set<string>()
+
+    chapters.forEach((chapter) => {
+      const slugs = new Set<string>()
+
+      chapter.missions.forEach((mission, index) => {
+        expect(mission.chapterId).toBe(chapter.id)
+        expect(mission.number).toBe(index + 1)
+        expect(mission.slug).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+        expect(mission.id).toBe(`mission-${mission.number}-${mission.slug}`)
+        expect(slugs.has(mission.slug)).toBe(false)
+        expect(adventureIds.has(mission.id)).toBe(false)
+        slugs.add(mission.slug)
+        adventureIds.add(mission.id)
+      })
+    })
   })
 
   it('provides exercise timing and repetition copy for every mission exercise', () => {
@@ -20,6 +40,7 @@ describe('chapter content', () => {
       expect(exercise.energyLeaves).toBeGreaterThan(0)
       expect(exercise.equipment.length).toBeGreaterThan(0)
       expect(Array.isArray(exercise.categories)).toBe(true)
+      expect(exercise.categories.length).toBeGreaterThan(0)
       expect(exercise.repetitions.pl).toBeTruthy()
       expect(exercise.repetitions.en).toBeTruthy()
       expect(exercise.description.pl).toBeTruthy()
@@ -34,12 +55,10 @@ describe('chapter content', () => {
   })
 
   it('keeps spicy variants in challenge options instead of health notes', () => {
-    const exercises = chapters.flatMap((chapter) =>
-      chapter.missions.flatMap((mission) => mission.exercises),
-    )
+    const exercises: Exercise[] = Object.values(exerciseLibrary)
     const challengeOptions = exercises.filter((exercise) => exercise.challengeOption)
 
-    expect(challengeOptions).toHaveLength(5)
+    expect(challengeOptions).toHaveLength(3)
     challengeOptions.forEach((exercise) => {
       expect(exercise.challengeOption?.pl).toContain('Podkręcona wersja')
       expect(exercise.challengeOption?.en).toContain('Spicy version')

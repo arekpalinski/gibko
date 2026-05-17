@@ -36,11 +36,13 @@ Gibko is a playful Progressive Web App for kids. It encourages gentle stretching
 - User-facing "adventures" may still be represented as `Mission` in code until the internal model is renamed.
 - Keep full exercise variants in `src/data/exercises.ts`; adventures in `src/data/chapters.ts` should reference them by `exerciseIds`.
 - Adventure energy leaves, estimated minutes, estimated time labels, and equipment are derived from referenced exercises.
-- Exercise categories already exist as `categories`; keep them as arrays even when empty.
+- Exercise categories are part of each reusable variant; keep them data-driven and multi-value so future optional adventures can filter by movement goal.
 - Prefer small, focused modules.
 - Use `localStorage` for prototype progress.
 - Keep GitHub Pages compatibility. The Vite base path is `/gibko/`.
 - Use `HashRouter` unless the deployment strategy changes to support SPA fallback routes.
+- Adventure routes should include the chapter and use `/chapter/:chapterId/adventure/:adventureSlug`; keep `/mission/:missionId` only as a legacy compatibility route.
+- Numeric debug aliases such as `/chapter/1/adventure/5?ex=2` are supported, but they must follow normal unlock rules.
 
 ## PWA Direction
 

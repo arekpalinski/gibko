@@ -27,7 +27,9 @@ Android Chrome is the first target. The app includes:
 
 ## Routing
 
-The app uses `HashRouter` to avoid GitHub Pages refresh problems for client-side routes.
+The app uses `HashRouter` to avoid GitHub Pages refresh problems for client-side routes. Adventure URLs should include the chapter, for example `#/chapter/rainforest/adventure/canopy-warmup`. The older `#/mission/:missionId` route is kept only for compatibility with already shared prototype links.
+
+For local debugging, the same route also accepts 1-based numeric aliases such as `#/chapter/1/adventure/5`. Add `?ex=2` to open the second exercise directly. Numeric aliases must not bypass locked adventures.
 
 ## Offline
 
