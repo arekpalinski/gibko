@@ -1214,6 +1214,7 @@ input:focus {
 }
 
 .exercise-note > svg {
+  align-self: center;
   background: rgba(255, 95, 126, 0.14);
   border: 1px solid rgba(255, 95, 126, 0.36);
   flex: 0 0 auto;
@@ -1221,6 +1222,7 @@ input:focus {
 }
 
 .exercise-challenge > svg {
+  align-self: center;
   background: rgba(155, 93, 229, 0.16);
   border: 1px solid rgba(255, 188, 54, 0.38);
   flex: 0 0 auto;
@@ -1253,12 +1255,15 @@ input:focus {
 
 .exercise-note,
 .exercise-challenge {
-  align-items: flex-start;
+  align-content: center;
+  align-items: center;
   color: rgba(255, 255, 255, 0.86);
-  display: flex;
+  display: grid;
   gap: 12px;
+  grid-template-columns: 42px 1fr;
   margin: 0;
   max-height: none;
+  min-height: 74px;
   overflow-y: auto;
   text-align: left;
   width: 100%;
@@ -1282,6 +1287,7 @@ input:focus {
   display: grid;
   gap: 3px;
   line-height: 1.32;
+  min-width: 0;
 }
 
 .exercise-control-panel {
@@ -1964,6 +1970,12 @@ input:focus {
     min-height: 78px;
   }
 
+  .exercise-note,
+  .exercise-challenge {
+    grid-template-columns: 36px 1fr;
+    min-height: 64px;
+  }
+
   .exercise-details div > svg,
   .exercise-note > svg,
   .exercise-challenge > svg {
@@ -2137,6 +2149,8 @@ input:focus {
   .exercise-note,
   .exercise-challenge {
     gap: 9px;
+    grid-template-columns: 32px 1fr;
+    min-height: 58px;
     padding: 8px;
   }
 
