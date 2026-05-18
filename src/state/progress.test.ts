@@ -117,6 +117,46 @@ describe('progress logic', () => {
     expect(secondResult.progress.consecutiveActiveDays).toBe(1)
   })
 
+  it('resets today exercise time when loading progress on a later day', () => {
+    const storedProgress = {
+      ...createInitialProgress('pl'),
+      acceptedSafety: true,
+      childName: 'Ola',
+      exerciseSecondsToday: 12 * 60,
+      lastActiveDate: '2026-05-12',
+      streakDays: 1,
+      totalExerciseSeconds: 45 * 60,
+    }
+
+    localStorage.setItem(storageKey, JSON.stringify(storedProgress))
+
+    const loadedProgress = loadProgress(new Date('2026-05-13T08:00:00'))
+
+    expect(loadedProgress.exerciseSecondsToday).toBe(0)
+    expect(loadedProgress.lastActiveDate).toBe('2026-05-12')
+    expect(loadedProgress.streakDays).toBe(1)
+    expect(loadedProgress.totalExerciseSeconds).toBe(45 * 60)
+  })
+
+  it('keeps today exercise time when loading progress on the same day', () => {
+    const storedProgress = {
+      ...createInitialProgress('pl'),
+      acceptedSafety: true,
+      childName: 'Ola',
+      exerciseSecondsToday: 12 * 60,
+      lastActiveDate: '2026-05-12',
+      streakDays: 1,
+      totalExerciseSeconds: 45 * 60,
+    }
+
+    localStorage.setItem(storageKey, JSON.stringify(storedProgress))
+
+    const loadedProgress = loadProgress(new Date('2026-05-12T20:00:00'))
+
+    expect(loadedProgress.exerciseSecondsToday).toBe(12 * 60)
+    expect(loadedProgress.totalExerciseSeconds).toBe(45 * 60)
+  })
+
   it('scores one star when the child used the too-hard help', () => {
     const mission = chapters[0].missions[0]
 

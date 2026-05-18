@@ -23,7 +23,7 @@ export function createInitialProgress(locale: Locale = 'pl'): Progress {
   }
 }
 
-export function loadProgress(): Progress {
+export function loadProgress(now = new Date()): Progress {
   const raw = localStorage.getItem(STORAGE_KEY)
   if (!raw) {
     return createInitialProgress()
@@ -37,7 +37,7 @@ export function loadProgress(): Progress {
       progress.consecutiveActiveDays = parsed.lastActiveDate ? 1 : 0
     }
 
-    return normalizeProgress(progress)
+    return normalizeProgress(progress, now)
   } catch {
     return createInitialProgress()
   }
@@ -224,10 +224,12 @@ function getEarnedBadges(progress: Progress, mission: Mission, now: Date) {
   return earned
 }
 
-function normalizeProgress(progress: Progress): Progress {
+function normalizeProgress(progress: Progress, now = new Date()): Progress {
+  const today = toDateKey(now)
   const normalized = {
     ...progress,
     consecutiveActiveDays: progress.consecutiveActiveDays ?? (progress.lastActiveDate ? 1 : 0),
+    exerciseSecondsToday: progress.lastActiveDate === today ? progress.exerciseSecondsToday : 0,
     missionStars: progress.missionStars ?? {},
   }
 

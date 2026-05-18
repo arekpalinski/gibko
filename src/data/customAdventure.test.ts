@@ -73,9 +73,16 @@ describe('custom adventure builder', () => {
     expect(calculateMissionXp(mission, halfRewardSeconds)).toBe(Math.round(mission.xp / 2))
     expect(calculateMissionXp(mission, plannedSeconds + 1)).toBe(mission.xp + 10)
 
-    const result = completeMission(createInitialProgress('en'), mission, fullRewardSeconds)
+    const result = completeMission(
+      createInitialProgress('en'),
+      mission,
+      fullRewardSeconds,
+      new Date('2026-05-18T12:00:00'),
+    )
 
     expect(result.progress.xp).toBe(mission.xp)
+    expect(result.progress.exerciseSecondsToday).toBe(fullRewardSeconds)
+    expect(result.progress.totalExerciseSeconds).toBe(fullRewardSeconds)
     expect(result.progress.completedMissionIds).toContain(mission.id)
     expect(result.progress.missionStars[mission.id]).toBe(3)
   })
