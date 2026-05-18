@@ -14,7 +14,7 @@ export const exerciseLibrary = {
     note: text("Jedno powtórzenie: 2 sekundy w górę, krótka pauza, 2 sekundy w dół.", "One rep: 2 seconds up, a short pause, 2 seconds down."),
     equipment: ["none"],
     energyLeaves: 24,
-    categories: ["shoulders", "back", "mobility", "warmup"],
+    categories: ["shoulders", "back"],
   },
   "leafyArms": {
     id: "leafyArms",
@@ -27,7 +27,7 @@ export const exerciseLibrary = {
     note: text("Koła są małe. Jeśli ramiona się męczą, opuść je na chwilę.", "Keep the circles small. If your arms get tired, lower them for a moment."),
     equipment: ["none"],
     energyLeaves: 24,
-    categories: ["shoulders", "mobility", "warmup"],
+    categories: ["shoulders"],
   },
   "vineSideBend": {
     id: "vineSideBend",
@@ -40,7 +40,7 @@ export const exerciseLibrary = {
     note: text("Nie pochylaj się do przodu. Idź bokiem tylko tak daleko, jak jest wygodnie.", "Do not bend forward. Move sideways only as far as comfortable."),
     equipment: ["none"],
     energyLeaves: 32,
-    categories: ["back", "core", "mobility", "stretching"],
+    categories: ["back", "trunk"],
   },
   "rainFrog": {
     id: "rainFrog",
@@ -53,7 +53,7 @@ export const exerciseLibrary = {
     note: text("Jedno powtórzenie: spokojnie w dół, krótka pauza, spokojnie w górę. Kolana patrzą w stronę palców.", "One rep: calm down, short pause, calm up. Knees point toward the toes."),
     equipment: ["none"],
     energyLeaves: 24,
-    categories: ["legs", "hips", "strength", "coordination"],
+    categories: ["legs", "thighs", "hips"],
   },
   "riverSteps": {
     id: "riverSteps",
@@ -66,7 +66,7 @@ export const exerciseLibrary = {
     note: text("Krok może być krótki. Najważniejsza jest kontrola kolana i spokojny powrót.", "The step can be short. Knee control and a calm return matter most."),
     equipment: ["none"],
     energyLeaves: 32,
-    categories: ["legs", "hips", "balance", "coordination"],
+    categories: ["legs", "thighs", "hips"],
   },
   "berryFootPress": {
     id: "berryFootPress",
@@ -79,7 +79,7 @@ export const exerciseLibrary = {
     note: text("Nacisk ma być przyjemny. Jeśli łaskocze albo boli, zmniejsz siłę.", "The pressure should feel comfortable. If it tickles or hurts, press more lightly."),
     equipment: ["softBall"],
     energyLeaves: 16,
-    categories: ["feet", "sensory", "mobility"],
+    categories: ["feet"],
   },
   "highLeavesCalfRaise": {
     id: "highLeavesCalfRaise",
@@ -92,7 +92,7 @@ export const exerciseLibrary = {
     note: text("Jedno powtórzenie: 2 sekundy w górę, 1 sekunda pauzy, 2 sekundy w dół.", "One rep: 2 seconds up, 1 second pause, 2 seconds down."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["feet", "calves", "balance", "strength"],
+    categories: ["feet", "calves", "legs"],
   },
   "treeCircleBall": {
     id: "treeCircleBall",
@@ -105,7 +105,7 @@ export const exerciseLibrary = {
     note: text("Można lekko dotykać ściany palcem.", "You may lightly touch a wall with one finger."),
     equipment: ["softBall"],
     energyLeaves: 24,
-    categories: ["feet", "balance", "coordination", "core"],
+    categories: ["feet", "trunk"],
   },
   "sensoryPath": {
     id: "sensoryPath",
@@ -118,7 +118,7 @@ export const exerciseLibrary = {
     note: text("Mata ma dawać ciekawe czucie, nie ból. Można ćwiczyć w skarpetkach.", "The mat should feel interesting, not painful. Socks are fine."),
     equipment: ["sensoryMat"],
     energyLeaves: 16,
-    categories: ["feet", "sensory", "balance"],
+    categories: ["feet"],
   },
   "quietToes": {
     id: "quietToes",
@@ -131,7 +131,7 @@ export const exerciseLibrary = {
     note: text("Nie odrywaj pięt od ziemi.", "Do not lift the heels."),
     equipment: ["none"],
     energyLeaves: 8,
-    categories: ["feet", "mobility", "control"],
+    categories: ["feet"],
   },
   "hipHingeTrunk": {
     id: "hipHingeTrunk",
@@ -144,7 +144,7 @@ export const exerciseLibrary = {
     note: text("Ruch zaczyna się od cofnięcia bioder, nie od zaokrąglenia pleców.", "The movement starts by moving the hips back, not by rounding the back."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["hips", "legs", "back", "mobility"],
+    categories: ["hips", "legs", "thighs", "back"],
   },
   "ankleVineReach": {
     id: "ankleVineReach",
@@ -157,7 +157,7 @@ export const exerciseLibrary = {
     note: text("Ruch ma być płynny, bez szarpania.", "Keep the movement smooth, without jerking."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["legs", "back", "mobility", "coordination"],
+    categories: ["legs", "thighs", "hips", "back"],
   },
   "calfStretch": {
     id: "calfStretch",
@@ -170,7 +170,7 @@ export const exerciseLibrary = {
     note: text("Rozciąganie ma być delikatne, bez bólu i bez sprężynowania.", "The stretch should be gentle, without pain or bouncing."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["calves", "legs", "stretching", "recovery"],
+    categories: ["calves", "legs"],
   },
   "frogLeafSquat": {
     id: "frogLeafSquat",
@@ -183,7 +183,7 @@ export const exerciseLibrary = {
     note: text("Nie śpiesz się. Kolana nie zapadają się do środka.", "Do not rush. Knees should not collapse inward."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["legs", "hips", "strength", "balance"],
+    categories: ["legs", "thighs", "hips"],
   },
   "storkOnMoss": {
     id: "storkOnMoss",
@@ -197,7 +197,7 @@ export const exerciseLibrary = {
     challengeOption: text("Podkręcona wersja: Powoli obróć głowę w prawo i w lewo, nie tracąc równowagi.", "Spicy version: Slowly turn your head right and left without losing balance."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["balance", "feet", "core"],
+    categories: ["feet", "legs", "trunk"],
   },
   "wetMossBalance": {
     id: "wetMossBalance",
@@ -210,7 +210,7 @@ export const exerciseLibrary = {
     note: text("To nie jest zwykła poduszka. Ćwicz na poduszce sensomotorycznej albo dysku sensorycznym, blisko ściany.", "This is not a regular pillow. Use a sensory cushion or balance disc near a wall."),
     equipment: ["sensoryCushion"],
     energyLeaves: 16,
-    categories: ["balance", "feet", "sensory", "core"],
+    categories: ["feet", "ankles", "trunk"],
   },
   "sideTracks": {
     id: "sideTracks",
@@ -223,7 +223,7 @@ export const exerciseLibrary = {
     note: text("Użyj poduszki sensomotorycznej albo dysku sensorycznego, nie zwykłej poduszki.", "Use a sensory cushion or balance disc, not a regular pillow."),
     equipment: ["sensoryCushion"],
     energyLeaves: 16,
-    categories: ["balance", "feet", "sensory", "core"],
+    categories: ["feet", "ankles", "trunk"],
   },
   "tinySprings": {
     id: "tinySprings",
@@ -236,7 +236,7 @@ export const exerciseLibrary = {
     note: text("Nie wykonuj tego na poduszce sensomotorycznej.", "Do not do this on a sensory cushion."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["legs", "coordination", "boneStrength", "energy"],
+    categories: ["legs", "thighs", "calves", "feet"],
   },
   "vineGuard": {
     id: "vineGuard",
@@ -249,7 +249,7 @@ export const exerciseLibrary = {
     note: text("Ruch rąk jest wolny. Stopa podporowa szuka spokojnego środka.", "Move the arms slowly. The standing foot searches for a calm center."),
     equipment: ["none"],
     energyLeaves: 24,
-    categories: ["balance", "core", "shoulders", "coordination"],
+    categories: ["trunk", "shoulders", "legs"],
   },
   "bookOpening": {
     id: "bookOpening",
@@ -262,7 +262,7 @@ export const exerciseLibrary = {
     note: text("Nie dociskaj barku ani kolana na siłę.", "Do not force the shoulder or knee down."),
     equipment: ["none"],
     energyLeaves: 24,
-    categories: ["back", "shoulders", "mobility", "stretching"],
+    categories: ["back", "shoulders", "chest"],
   },
   "shoulderBladeNut": {
     id: "shoulderBladeNut",
@@ -276,7 +276,7 @@ export const exerciseLibrary = {
     challengeOption: text("Podkręcona wersja: Wykonaj ruch z rękami ustawionymi jak litera W.", "Spicy version: Do the movement with arms shaped like the letter W."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["back", "shoulders", "posture", "strength"],
+    categories: ["back", "shoulders", "chest"],
   },
   "parrotWings": {
     id: "parrotWings",
@@ -289,7 +289,7 @@ export const exerciseLibrary = {
     note: text("Nie wypychaj mocno żeber do przodu.", "Do not push the ribs strongly forward."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["shoulders", "chest", "back", "mobility"],
+    categories: ["shoulders", "chest", "back"],
   },
   "legSeesSky": {
     id: "legSeesSky",
@@ -303,7 +303,7 @@ export const exerciseLibrary = {
     challengeOption: text("Podkręcona wersja: Zatrzymaj nogę u góry na 2 sekundy.", "Spicy version: Hold the leg up for 2 seconds."),
     equipment: ["none"],
     energyLeaves: 24,
-    categories: ["legs", "hips", "core", "mobility"],
+    categories: ["legs", "thighs", "hips", "trunk"],
   },
   "rootsUnderFeet": {
     id: "rootsUnderFeet",
@@ -316,7 +316,7 @@ export const exerciseLibrary = {
     note: text("Kolana mogą być lekko ugięte. Nie dociskaj na siłę.", "Knees may be slightly bent. Do not force the stretch."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["legs", "back", "stretching", "mobility"],
+    categories: ["legs", "thighs", "calves", "back"],
   },
   "crossedVines": {
     id: "crossedVines",
@@ -329,7 +329,7 @@ export const exerciseLibrary = {
     note: text("Jeśli równowaga ucieka, rozstaw nogi szerzej albo zrób wersję bez piłeczki.", "If balance is difficult, stand wider or do it without the ball."),
     equipment: ["softBall"],
     energyLeaves: 24,
-    categories: ["feet", "calves", "balance", "coordination"],
+    categories: ["feet", "calves", "legs"],
   },
   "spiderPath": {
     id: "spiderPath",
@@ -342,7 +342,7 @@ export const exerciseLibrary = {
     note: text("Pięty zostają na ziemi. Dłonie mogą zostać na krześle albo na udach.", "Keep heels on the floor. Hands may stay on a chair or thighs."),
     equipment: ["none"],
     energyLeaves: 24,
-    categories: ["fullBody", "back", "legs", "core", "mobility"],
+    categories: ["back", "legs", "thighs", "trunk", "calves"],
   },
   "crabUnderLeaf": {
     id: "crabUnderLeaf",
@@ -355,7 +355,7 @@ export const exerciseLibrary = {
     note: text("Nie zapadaj kolan do środka.", "Do not let knees collapse inward."),
     equipment: ["none"],
     energyLeaves: 24,
-    categories: ["legs", "hips", "coordination", "strength"],
+    categories: ["legs", "thighs", "hips", "glutes"],
   },
   "lazyTiger": {
     id: "lazyTiger",
@@ -368,7 +368,7 @@ export const exerciseLibrary = {
     note: text("Oddychaj spokojnie i nie wyginaj pleców na siłę.", "Breathe calmly and do not force the back."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["back", "core", "mobility", "warmup"],
+    categories: ["back", "trunk"],
   },
   "highLowBranch": {
     id: "highLowBranch",
@@ -381,7 +381,7 @@ export const exerciseLibrary = {
     note: text("Ruch ma płynąć spokojnie: góra, dół, powrót.", "Let the movement flow calmly: up, down, return."),
     equipment: ["none"],
     energyLeaves: 24,
-    categories: ["fullBody", "back", "legs", "mobility"],
+    categories: ["back", "legs", "thighs", "shoulders"],
   },
   "narrowBridge": {
     id: "narrowBridge",
@@ -394,7 +394,7 @@ export const exerciseLibrary = {
     note: text("Idź powoli. Nie trzeba patrzeć cały czas pod nogi.", "Walk slowly. You do not have to look at your feet the whole time."),
     equipment: ["none"],
     energyLeaves: 24,
-    categories: ["balance", "feet", "coordination"],
+    categories: ["feet", "legs"],
   },
   "quadRest": {
     id: "quadRest",
@@ -407,7 +407,7 @@ export const exerciseLibrary = {
     note: text("Można trzymać się ściany albo krzesła. Bez ciągnięcia na siłę.", "You may hold a wall or chair. Do not pull hard."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["legs", "hips", "stretching", "recovery"],
+    categories: ["legs", "thighs", "hips"],
   },
   "calmTail": {
     id: "calmTail",
@@ -420,7 +420,7 @@ export const exerciseLibrary = {
     note: text("Ruch jest mały i płynny. Nie kręć szybko głową.", "Keep the movement small and smooth. Do not whip the head around."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["back", "core", "mobility"],
+    categories: ["back", "trunk"],
   },
   "hamstringTrail": {
     id: "hamstringTrail",
@@ -433,7 +433,7 @@ export const exerciseLibrary = {
     note: text("Plecy mogą zostać długie. Nie dociskaj głowy do kolana.", "Keep the back long. Do not force the head toward the knee."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["legs", "stretching", "recovery"],
+    categories: ["legs", "thighs", "hips"],
   },
   "waterfallBreath": {
     id: "waterfallBreath",
@@ -446,7 +446,7 @@ export const exerciseLibrary = {
     note: text("Wydech może być dłuższy niż wdech.", "The exhale may be longer than the inhale."),
     equipment: ["none"],
     energyLeaves: 8,
-    categories: ["breathing", "recovery", "calm"],
+    categories: ["chest", "trunk"],
   },
   "owlNeckTurn": {
     id: "owlNeckTurn",
@@ -459,7 +459,7 @@ export const exerciseLibrary = {
     note: text("Szyja jest długa, a ruch mały i spokojny.", "Keep the neck long and the movement small and calm."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["neck", "mobility", "calm"],
+    categories: ["neck"],
   },
   "butterflyClearing": {
     id: "butterflyClearing",
@@ -472,7 +472,7 @@ export const exerciseLibrary = {
     note: text("Nie dociskaj kolan rękami.", "Do not press the knees down with your hands."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["hips", "legs", "stretching", "recovery"],
+    categories: ["hips", "thighs", "legs"],
   },
   "leafOnWater": {
     id: "leafOnWater",
@@ -485,7 +485,7 @@ export const exerciseLibrary = {
     note: text("Ruch jest mały i przyjemny.", "Keep the movement small and comfortable."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["back", "hips", "recovery", "calm"],
+    categories: ["back", "hips", "trunk"],
   },
   "rootBridge": {
     id: "rootBridge",
@@ -498,7 +498,7 @@ export const exerciseLibrary = {
     note: text("Jedno powtórzenie: unieś, zatrzymaj na 1 sekundę, opuść spokojnie.", "One rep: lift, hold for 1 second, lower calmly."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["hips", "glutes", "core", "strength"],
+    categories: ["hips", "glutes", "trunk", "back"],
   },
   "streamClamshell": {
     id: "streamClamshell",
@@ -511,7 +511,7 @@ export const exerciseLibrary = {
     note: text("Miednica nie powinna przewracać się do tyłu.", "Do not let the pelvis roll backward."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["hips", "glutes", "legs", "strength"],
+    categories: ["hips", "glutes", "legs", "thighs"],
   },
   "hipGate": {
     id: "hipGate",
@@ -524,7 +524,7 @@ export const exerciseLibrary = {
     note: text("Koło jest małe. Tułów zostaje spokojny.", "Keep the circle small and the torso calm."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["hips", "balance", "mobility", "coordination"],
+    categories: ["hips", "legs", "trunk"],
   },
   "lowCalfStretch": {
     id: "lowCalfStretch",
@@ -537,7 +537,7 @@ export const exerciseLibrary = {
     note: text("Rozciąganie powinno być niżej, bliżej kostki. Bez bólu.", "The stretch should feel lower, closer to the ankle. No pain."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["calves", "ankles", "stretching", "recovery"],
+    categories: ["calves", "ankles", "legs"],
   },
   "ankleCircles": {
     id: "ankleCircles",
@@ -550,7 +550,7 @@ export const exerciseLibrary = {
     note: text("Ruch wychodzi z kostki, nie z całej nogi.", "The movement comes from the ankle, not the whole leg."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["ankles", "feet", "mobility", "recovery"],
+    categories: ["ankles", "feet"],
   },
   "birdDetective": {
     id: "birdDetective",
@@ -563,7 +563,7 @@ export const exerciseLibrary = {
     note: text("Ruch jest spokojny. Nie wypychaj głowy do przodu.", "Move calmly. Do not push the head forward."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["shoulders", "back", "mobility", "posture"],
+    categories: ["shoulders", "back", "chest"],
   },
   "forestClock": {
     id: "forestClock",
@@ -576,7 +576,7 @@ export const exerciseLibrary = {
     note: text("Dotknięcia są lekkie. Noga podporowa zostaje stabilna.", "Touches are light. Keep the standing leg stable."),
     equipment: ["none"],
     energyLeaves: 24,
-    categories: ["balance", "hips", "feet", "coordination"],
+    categories: ["hips", "feet", "legs", "trunk"],
   },
   "mangoReach": {
     id: "mangoReach",
@@ -589,7 +589,7 @@ export const exerciseLibrary = {
     note: text("Pięty mogą zostać na ziemi albo lekko się unieść.", "Heels may stay down or lift slightly."),
     equipment: ["none"],
     energyLeaves: 16,
-    categories: ["shoulders", "back", "core", "mobility"],
+    categories: ["shoulders", "back", "trunk"],
   },
 } satisfies Record<string, Exercise>
 

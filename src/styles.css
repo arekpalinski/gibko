@@ -89,6 +89,12 @@ a {
 
 .home-screen {
   align-content: start;
+  align-items: start;
+  grid-auto-rows: max-content;
+}
+
+.home-screen > * {
+  width: 100%;
 }
 
 .centered {
@@ -584,6 +590,54 @@ input:focus {
   width: 156px;
 }
 
+.custom-adventure-card {
+  background:
+    radial-gradient(circle at 78% 22%, rgba(255, 188, 54, 0.18), transparent 0 24%, transparent 52%),
+    radial-gradient(circle at 18% 84%, rgba(255, 95, 126, 0.14), transparent 0 26%, transparent 56%),
+    var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.2);
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 140px;
+  overflow: hidden;
+  padding: 18px 16px 14px 18px;
+}
+
+.custom-adventure-copy {
+  min-width: 0;
+}
+
+.custom-adventure-card h2 {
+  font-size: 1.55rem;
+  line-height: 1.08;
+  margin-top: 12px;
+}
+
+.custom-adventure-card p:not(.eyebrow) {
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.92rem;
+  line-height: 1.35;
+  margin-top: 9px;
+}
+
+.custom-adventure-card .primary-action {
+  display: flex;
+  margin-top: 12px;
+  width: 100%;
+}
+
+.custom-adventure-mascot {
+  align-self: center;
+  filter: drop-shadow(0 16px 24px rgba(0, 0, 0, 0.34));
+  justify-self: center;
+  max-height: 156px;
+  object-fit: contain;
+  transform: translateX(4px);
+  width: 154px;
+}
+
 .mission-meta {
   display: flex;
   flex-wrap: nowrap;
@@ -850,6 +904,215 @@ input:focus {
 .node-stars strong {
   color: var(--green);
   font-size: 0.8rem;
+}
+
+.custom-builder-screen,
+.custom-preview-screen {
+  align-content: start;
+  align-items: start;
+  gap: 12px;
+  grid-auto-rows: max-content;
+}
+
+.custom-builder-screen > *,
+.custom-preview-screen > * {
+  min-width: 0;
+  width: 100%;
+}
+
+.custom-builder-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.custom-control-card,
+.custom-preview-list {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.18);
+  padding: 16px;
+}
+
+.custom-preview-screen .center-title-row {
+  grid-template-columns: 44px 1fr 44px;
+  min-height: 44px;
+}
+
+.custom-control-heading,
+.custom-preview-list-heading {
+  align-items: center;
+  color: var(--cyan);
+  display: flex;
+  font-weight: 950;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.custom-control-heading {
+  justify-content: flex-start;
+  margin-bottom: 12px;
+}
+
+.custom-control-heading svg,
+.custom-preview-list-heading svg {
+  color: var(--gold);
+}
+
+.count-stepper {
+  align-items: center;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 48px 1fr 48px;
+}
+
+.count-stepper button {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(22, 214, 194, 0.28);
+  border-radius: 16px;
+  color: var(--cyan);
+  display: flex;
+  height: 48px;
+  justify-content: center;
+}
+
+.count-stepper strong {
+  color: white;
+  font-size: 2rem;
+  font-weight: 950;
+  text-align: center;
+}
+
+.time-range-control {
+  display: grid;
+  gap: 12px;
+}
+
+.time-range-control label {
+  display: grid;
+  gap: 8px;
+}
+
+.time-range-control span {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
+.time-range-control input {
+  accent-color: var(--cyan);
+  width: 100%;
+}
+
+.category-chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.category-chip {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.82rem;
+  font-weight: 900;
+  padding: 9px 11px;
+}
+
+.category-chip.selected {
+  background: rgba(22, 214, 194, 0.16);
+  border-color: rgba(22, 214, 194, 0.52);
+  color: var(--cyan);
+}
+
+.custom-preview-hero {
+  align-items: start;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 92px minmax(0, 1fr);
+  padding: 0 4px 2px;
+}
+
+.custom-preview-hero h2 {
+  font-size: 1.3rem;
+  line-height: 1.06;
+  padding-top: 8px;
+}
+
+.custom-preview-hero p:not(.eyebrow) {
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.88rem;
+  line-height: 1.28;
+  margin-top: 8px;
+}
+
+.custom-preview-mascot {
+  align-self: start;
+  filter: drop-shadow(0 16px 24px rgba(0, 0, 0, 0.34));
+  justify-self: start;
+  max-height: 118px;
+  object-fit: contain;
+  width: 92px;
+}
+
+.custom-preview-list {
+  display: grid;
+  gap: 10px;
+}
+
+.custom-preview-list-heading strong {
+  align-items: center;
+  color: var(--green);
+  display: inline-flex;
+  font-size: 0.86rem;
+  gap: 5px;
+}
+
+.custom-preview-list-heading strong svg {
+  color: var(--green);
+  fill: currentColor;
+}
+
+.custom-exercise-row {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 52px 1fr;
+  padding: 10px;
+}
+
+.custom-exercise-row .exercise-icon {
+  height: 48px;
+  width: 48px;
+}
+
+.custom-exercise-row .exercise-icon svg {
+  height: 24px;
+  width: 24px;
+}
+
+.custom-exercise-row strong {
+  display: block;
+  font-size: 0.96rem;
+  line-height: 1.18;
+}
+
+.custom-exercise-row span {
+  color: var(--cyan);
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 900;
+  margin-top: 3px;
+}
+
+.custom-preview-actions {
+  display: grid;
+  gap: 10px;
 }
 
 .mission-screen {
@@ -1791,6 +2054,25 @@ input:focus {
     width: 140px;
   }
 
+  .custom-adventure-card {
+    grid-template-columns: 1fr 126px;
+    padding: 16px 14px 14px 16px;
+  }
+
+  .custom-adventure-mascot {
+    max-height: 142px;
+    width: 136px;
+  }
+
+  .custom-preview-hero {
+    grid-template-columns: 84px minmax(0, 1fr);
+  }
+
+  .custom-preview-mascot {
+    max-height: 108px;
+    width: 84px;
+  }
+
   .mission-screen {
     gap: 8px;
     padding-top: 12px;
@@ -1887,6 +2169,60 @@ input:focus {
   .mission-mascot {
     transform: translateY(-4px);
     width: 124px;
+  }
+
+  .custom-adventure-card {
+    grid-template-columns: 1fr 112px;
+    padding-bottom: 12px;
+  }
+
+  .custom-adventure-card h2 {
+    font-size: 1.28rem;
+    margin-top: 8px;
+  }
+
+  .custom-adventure-card p:not(.eyebrow) {
+    font-size: 0.84rem;
+    margin-top: 7px;
+  }
+
+  .custom-adventure-card .primary-action {
+    margin-top: 10px;
+    min-height: 48px;
+  }
+
+  .custom-adventure-mascot {
+    max-height: 128px;
+    width: 120px;
+  }
+
+  .custom-control-card,
+  .custom-preview-list {
+    padding: 13px;
+  }
+
+  .custom-preview-hero {
+    padding: 0 2px 2px;
+  }
+
+  .category-chip {
+    font-size: 0.76rem;
+    padding: 8px 10px;
+  }
+
+  .custom-preview-hero h2 {
+    font-size: 1.14rem;
+  }
+
+  .custom-preview-hero p:not(.eyebrow) {
+    font-size: 0.8rem;
+    line-height: 1.24;
+    margin-top: 6px;
+  }
+
+  .custom-preview-mascot {
+    max-height: 98px;
+    width: 78px;
   }
 
   .summary-mascot {
@@ -2215,6 +2551,14 @@ input:focus {
   .mission-mascot {
     transform: translateY(-6px);
     width: 132px;
+  }
+
+  .custom-adventure-card {
+    grid-template-columns: 1fr 108px;
+  }
+
+  .custom-adventure-mascot {
+    width: 114px;
   }
 
   .home-hero {

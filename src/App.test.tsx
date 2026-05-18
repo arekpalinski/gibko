@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { App, getExplorerTitleProgress } from './App'
 import { badges } from './data/badges'
 import { chapters } from './data/chapters'
+import { customAdventureCategoryLabels, getAvailableCustomAdventureCategories } from './data/customAdventure'
 import { createInitialProgress, saveProgress } from './state/progress'
 
 describe('mission flow', () => {
@@ -59,6 +60,44 @@ describe('mission flow', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Install Gibko' }))
 
     expect(prompt).toHaveBeenCalledOnce()
+  })
+
+  it('lets children build a custom adventure from the home screen', async () => {
+    const progress = {
+      ...createInitialProgress('en'),
+      acceptedSafety: true,
+      childName: 'Alex',
+    }
+    saveProgress(progress)
+
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <App />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByRole('link', { name: 'Build adventure' })).toHaveAttribute(
+      'href',
+      '/custom-adventure/setup',
+    )
+
+    fireEvent.click(screen.getByRole('link', { name: 'Build adventure' }))
+
+    expect(await screen.findByRole('heading', { name: 'My own adventure' })).toBeInTheDocument()
+    expect(screen.getByText('Number of exercises')).toBeInTheDocument()
+    expect(screen.getByText('Everything')).toBeInTheDocument()
+    getAvailableCustomAdventureCategories().forEach((category) => {
+      expect(
+        screen.getByRole('button', { name: customAdventureCategoryLabels[category].en }),
+      ).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Build adventure' }))
+
+    expect(await screen.findByRole('heading', { name: 'Here is a set for you' })).toBeInTheDocument()
+    expect(screen.getByText('Selected exercises')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Start' })).toHaveAttribute('href', '/custom-adventure/play')
+    expect(screen.getByRole('button', { name: 'Build again' })).toBeInTheDocument()
   })
 
   it('links unlocked map nodes through the chapter adventure route', async () => {

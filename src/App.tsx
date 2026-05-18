@@ -12,11 +12,16 @@ import {
   Home,
   Languages,
   Leaf,
+  ListChecks,
   Lock,
+  Minus,
+  PersonStanding,
   Play,
+  Plus,
   RotateCcw,
   Settings,
   ShieldCheck,
+  SlidersHorizontal,
   Sparkles,
   Sun,
   TreePine,
@@ -28,6 +33,16 @@ import type { ReactNode } from 'react'
 import { Link, NavLink, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { badges } from './data/badges'
 import { chapters } from './data/chapters'
+import {
+  DEFAULT_CUSTOM_ADVENTURE_OPTIONS,
+  createCustomAdventureMission,
+  customAdventureCategoryLabels,
+  generateCustomAdventureDraft,
+  getAvailableCustomAdventureCategories,
+  loadCustomAdventureDraft,
+  normalizeCustomAdventureOptions,
+  saveCustomAdventureDraft,
+} from './data/customAdventure'
 import { t } from './i18n/messages'
 import {
   clearProgress,
@@ -38,7 +53,7 @@ import {
   loadProgress,
   saveProgress,
 } from './state/progress'
-import type { Badge, Exercise, LocalizedText, Mission, Progress } from './types'
+import type { Badge, Exercise, ExerciseCategory, LocalizedText, Mission, Progress } from './types'
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>
@@ -49,6 +64,8 @@ const GIBKO_LOGO_SRC = assetPath('gibko-logo-transparent.webp')
 const GIBKO_MASCOT_SRC = assetPath('gibko-mascot-stretch-transparent.webp')
 const GIBKO_HELLO_SRC = assetPath('gibko-hello-transparent.webp')
 const GIBKO_PROFILE_AVATAR_SRC = assetPath('gibko-profile-avatar.webp')
+const GIBKO_CUSTOM_ADVENTURE_SRC = assetPath('gibko-custom-adventure.webp')
+const GIBKO_CUSTOM_PREVIEW_SRC = assetPath('gibko-custom-preview.webp')
 const MISSION_COMPLETED_IMAGES = [
   assetPath('gibko-mission-completed-1.webp'),
   assetPath('gibko-mission-completed-2.webp'),
@@ -140,6 +157,25 @@ export function App() {
             }
           />
           <Route path="/map" element={<MapScreen progress={progress} translate={translate} />} />
+          <Route
+            path="/custom-adventure/setup"
+            element={<CustomAdventureSetupScreen progress={progress} translate={translate} />}
+          />
+          <Route
+            path="/custom-adventure/preview"
+            element={<CustomAdventurePreviewScreen progress={progress} translate={translate} />}
+          />
+          <Route
+            path="/custom-adventure/play"
+            element={
+              <MissionScreen
+                customAdventure
+                progress={progress}
+                setProgress={setProgress}
+                translate={translate}
+              />
+            }
+          />
           <Route
             path="/chapter/:chapterId/adventure/:adventureSlug"
             element={
@@ -320,6 +356,23 @@ function HomeScreen({
         </div>
         <img className="mission-mascot" src={GIBKO_MASCOT_SRC} alt="Gibko stretching" />
       </section>
+
+      <section className="custom-adventure-card">
+        <div className="custom-adventure-copy">
+          <p className="eyebrow">{translate('custom.eyebrow')}</p>
+          <h2>{translate('custom.homeTitle')}</h2>
+          <p>{translate('custom.homeBody')}</p>
+          <Link className="primary-action" to="/custom-adventure/setup">
+            {translate('custom.homeAction')}
+            <ChevronRight size={20} />
+          </Link>
+        </div>
+        <img
+          className="custom-adventure-mascot"
+          src={GIBKO_CUSTOM_ADVENTURE_SRC}
+          alt={translate('custom.homeImageAlt')}
+        />
+      </section>
     </Screen>
   )
 }
@@ -419,11 +472,235 @@ function MapScreen({
   )
 }
 
+function CustomAdventureSetupScreen({
+  progress,
+  translate,
+}: {
+  progress: Progress
+  translate: (key: string, values?: Record<string, string | number>) => string
+}) {
+  const navigate = useNavigate()
+  const availableCategories = getAvailableCustomAdventureCategories()
+  const [options, setOptions] = useState(() =>
+    normalizeCustomAdventureOptions(loadCustomAdventureDraft()?.options ?? DEFAULT_CUSTOM_ADVENTURE_OPTIONS),
+  )
+
+  const updateOptions = (nextOptions: Partial<typeof options>) => {
+    setOptions((currentOptions) => normalizeCustomAdventureOptions({ ...currentOptions, ...nextOptions }))
+  }
+
+  const toggleCategory = (category: ExerciseCategory) => {
+    updateOptions({
+      categories: options.categories.includes(category)
+        ? options.categories.filter((selectedCategory) => selectedCategory !== category)
+        : [...options.categories, category],
+    })
+  }
+
+  const buildAdventure = () => {
+    const draft = generateCustomAdventureDraft(options, loadCustomAdventureDraft()?.exerciseIds ?? [])
+    saveCustomAdventureDraft(draft)
+    navigate('/custom-adventure/preview')
+  }
+
+  return (
+    <Screen className="custom-builder-screen">
+      <header className="center-title-row">
+        <Link className="round-button" to="/">
+          <ChevronLeft />
+        </Link>
+        <h1>{translate('custom.eyebrow')}</h1>
+        <span />
+      </header>
+
+      <section className="custom-builder-panel">
+        <div className="custom-control-card">
+          <div className="custom-control-heading">
+            <ListChecks size={20} />
+            <span>{translate('custom.exerciseCount')}</span>
+          </div>
+          <div className="count-stepper">
+            <button
+              aria-label={translate('custom.decreaseExercises')}
+              onClick={() => updateOptions({ exerciseCount: options.exerciseCount - 1 })}
+              type="button"
+            >
+              <Minus size={18} />
+            </button>
+            <strong>{options.exerciseCount}</strong>
+            <button
+              aria-label={translate('custom.increaseExercises')}
+              onClick={() => updateOptions({ exerciseCount: options.exerciseCount + 1 })}
+              type="button"
+            >
+              <Plus size={18} />
+            </button>
+          </div>
+        </div>
+
+        <div className="custom-control-card">
+          <div className="custom-control-heading">
+            <SlidersHorizontal size={20} />
+            <span>{translate('custom.timeRange')}</span>
+          </div>
+          <div className="time-range-control">
+            <label>
+              <span>{translate('custom.timeFrom', { minutes: options.minMinutes })}</span>
+              <input
+                aria-label={translate('custom.minMinutesLabel')}
+                max="25"
+                min="5"
+                onChange={(event) => updateOptions({ minMinutes: Number(event.currentTarget.value) })}
+                step="1"
+                type="range"
+                value={options.minMinutes}
+              />
+            </label>
+            <label>
+              <span>{translate('custom.timeTo', { minutes: options.maxMinutes })}</span>
+              <input
+                aria-label={translate('custom.maxMinutesLabel')}
+                max="25"
+                min="5"
+                onChange={(event) => updateOptions({ maxMinutes: Number(event.currentTarget.value) })}
+                step="1"
+                type="range"
+                value={options.maxMinutes}
+              />
+            </label>
+          </div>
+        </div>
+
+        <div className="custom-control-card">
+          <div className="custom-control-heading">
+            <PersonStanding size={20} />
+            <span>{translate('custom.categories')}</span>
+          </div>
+          <div className="category-chip-grid">
+            <button
+              aria-pressed={options.categories.length === 0}
+              className={options.categories.length === 0 ? 'category-chip selected' : 'category-chip'}
+              onClick={() => updateOptions({ categories: [] })}
+              type="button"
+            >
+              {translate('custom.allCategories')}
+            </button>
+            {availableCategories.map((category) => {
+              const selected = options.categories.includes(category)
+
+              return (
+                <button
+                  aria-pressed={selected}
+                  className={selected ? 'category-chip selected' : 'category-chip'}
+                  key={category}
+                  onClick={() => toggleCategory(category)}
+                  type="button"
+                >
+                  {localize(progress.locale, customAdventureCategoryLabels[category])}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      <button className="primary-action wide" onClick={buildAdventure} type="button">
+        {translate('custom.generate')}
+        <ChevronRight size={20} />
+      </button>
+    </Screen>
+  )
+}
+
+function CustomAdventurePreviewScreen({
+  progress,
+  translate,
+}: {
+  progress: Progress
+  translate: (key: string, values?: Record<string, string | number>) => string
+}) {
+  const [draft, setDraft] = useState(() => {
+    const savedDraft = loadCustomAdventureDraft()
+
+    if (savedDraft) {
+      return savedDraft
+    }
+
+    return generateCustomAdventureDraft(DEFAULT_CUSTOM_ADVENTURE_OPTIONS)
+  })
+  const mission = useMemo(() => createCustomAdventureMission(draft.exerciseIds), [draft.exerciseIds])
+
+  useEffect(() => {
+    saveCustomAdventureDraft(draft)
+  }, [draft])
+
+  const regenerateAdventure = () => {
+    const nextDraft = generateCustomAdventureDraft(draft.options, draft.exerciseIds)
+    setDraft(nextDraft)
+  }
+
+  return (
+    <Screen className="custom-preview-screen">
+      <header className="center-title-row">
+        <Link className="round-button" to="/custom-adventure/setup">
+          <ChevronLeft />
+        </Link>
+        <span />
+        <span />
+      </header>
+
+      <section className="custom-preview-hero">
+        <img
+          className="custom-preview-mascot"
+          src={GIBKO_CUSTOM_PREVIEW_SRC}
+          alt={translate('custom.previewImageAlt')}
+        />
+        <div>
+          <h2>{translate('custom.previewHeading')}</h2>
+          <p>{translate('custom.previewBody')}</p>
+        </div>
+      </section>
+
+      <section className="custom-preview-list" aria-label={translate('custom.selectedExercises')}>
+        <div className="custom-preview-list-heading">
+          <span>{translate('custom.selectedExercises')}</span>
+          <strong>
+            <Leaf size={16} />
+            {translate('custom.energyLeaves', { xp: mission.xp })}
+          </strong>
+        </div>
+        {mission.exercises.map((exercise) => (
+          <div className="custom-exercise-row" key={exercise.id}>
+            <ExerciseIcon exercise={exercise} />
+            <div>
+              <strong>{localize(progress.locale, exercise.title)}</strong>
+              <span>{localize(progress.locale, exercise.estimatedTimeLabel)}</span>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <div className="custom-preview-actions">
+        <Link className="primary-action wide" to="/custom-adventure/play">
+          {translate('custom.start')}
+          <ChevronRight size={20} />
+        </Link>
+        <button className="secondary-action wide" onClick={regenerateAdventure} type="button">
+          <RotateCcw size={18} />
+          {translate('custom.regenerate')}
+        </button>
+      </div>
+    </Screen>
+  )
+}
+
 function MissionScreen({
+  customAdventure = false,
   progress,
   setProgress,
   translate,
 }: {
+  customAdventure?: boolean
   progress: Progress
   setProgress: (progress: Progress) => void
   translate: (key: string, values?: Record<string, string | number>) => string
@@ -431,9 +708,19 @@ function MissionScreen({
   const { adventureSlug, chapterId, missionId } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
-  const mission = findAdventureByRoute({ adventureSlug, chapterId, missionId })
+  const customDraft = useMemo(
+    () => (customAdventure ? loadCustomAdventureDraft() : null),
+    [customAdventure, location.pathname],
+  )
+  const mission = customAdventure
+    ? customDraft
+      ? createCustomAdventureMission(customDraft.exerciseIds)
+      : undefined
+    : findAdventureByRoute({ adventureSlug, chapterId, missionId })
   const initialExerciseIndex = getInitialExerciseIndex(location.search, mission)
-  const routeKey = `${missionId ?? `${chapterId ?? ''}/${adventureSlug ?? ''}`}${location.search}`
+  const routeKey = customAdventure
+    ? `custom/${customDraft?.exerciseIds.join('-') ?? 'missing'}${location.search}`
+    : `${missionId ?? `${chapterId ?? ''}/${adventureSlug ?? ''}`}${location.search}`
   const [exerciseIndex, setExerciseIndex] = useState(0)
   const [startedExerciseIds, setStartedExerciseIds] = useState<string[]>([])
   const [difficultyHelpExerciseIds, setDifficultyHelpExerciseIds] = useState<string[]>([])
@@ -482,10 +769,18 @@ function MissionScreen({
   )
 
   if (!mission) {
-    return null
+    return (
+      <Screen className="centered">
+        <h1>{translate('custom.missingTitle')}</h1>
+        <p>{translate('custom.missingBody')}</p>
+        <Link className="primary-action" to="/custom-adventure/setup">
+          {translate('custom.homeAction')}
+        </Link>
+      </Screen>
+    )
   }
 
-  if (!isMissionUnlocked(progress, mission.id)) {
+  if (!customAdventure && !isMissionUnlocked(progress, mission.id)) {
     return (
       <Screen className="centered">
         <Lock size={48} />
@@ -541,7 +836,7 @@ function MissionScreen({
     setEarnedBadgeIds(result.earnedBadgeIds)
     setStarsEarned(result.starsEarned)
     setXpEarned(result.xpEarned)
-    setNextAdventureId(findNextAdventure(result.progress)?.id ?? null)
+    setNextAdventureId(customAdventure ? null : findNextAdventure(result.progress)?.id ?? null)
     setMissionDone(true)
   }
 
@@ -570,7 +865,11 @@ function MissionScreen({
   return (
     <Screen className="mission-screen">
       <header className="mission-header">
-        <button className="round-button" onClick={() => navigate('/map')} type="button">
+        <button
+          className="round-button"
+          onClick={() => navigate(customAdventure ? '/custom-adventure/preview' : '/map')}
+          type="button"
+        >
           <ChevronLeft />
         </button>
         <div className="exercise-progress-header">
