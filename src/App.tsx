@@ -48,6 +48,7 @@ import {
   clearProgress,
   completeMission,
   createInitialProgress,
+  getCanonicalMissionId,
   isMissionCompleted,
   isMissionUnlocked,
   loadProgress,
@@ -76,6 +77,7 @@ const GIBKO_CUSTOM_ADVENTURE_SRC = assetPath('gibko-custom-adventure.webp')
 const GIBKO_CUSTOM_PREVIEW_SRC = assetPath('gibko-custom-preview.webp')
 const MAP_RAINFOREST_BOARD_SRC = assetPath('map-rainforest-board.webp')
 const MAP_RAINFOREST_THUMB_SRC = assetPath('map-rainforest-thumb.webp')
+const MAP_MISTY_BOARD_SRC = assetPath('map-misty-board.webp')
 const MAP_MISTY_THUMB_SRC = assetPath('map-misty-thumb.webp')
 const GIBKO_NEXT_CHAPTER_SRC = assetPath('gibko-next-chapter.webp')
 const MISSION_COMPLETED_IMAGES = [
@@ -85,6 +87,16 @@ const MISSION_COMPLETED_IMAGES = [
 const EXERCISE_MASCOT_IMAGES = [1, 2, 3, 4].map((index) =>
   assetPath(`gibko-exercise-${index}.webp`),
 )
+const CHAPTER_MAP_ASSETS: Record<string, { board: string; thumb: string }> = {
+  rainforest: {
+    board: MAP_RAINFOREST_BOARD_SRC,
+    thumb: MAP_RAINFOREST_THUMB_SRC,
+  },
+  'misty-forest': {
+    board: MAP_MISTY_BOARD_SRC,
+    thumb: MAP_MISTY_THUMB_SRC,
+  },
+}
 const COMPLETION_IMAGE_STORAGE_KEY = 'gibko-completion-image-index'
 const EXPLORER_TITLE_STEP = 1000
 const EXPLORER_TITLES: LocalizedText[] = [
@@ -436,10 +448,15 @@ function MapScreen({
   progress: Progress
   translate: (key: string, values?: Record<string, string | number>) => string
 }) {
-  const chapter = chapters[0]
-  const completedCount = chapter.missions.filter((mission) => isMissionCompleted(progress, mission.id)).length
-  const mistyForestTitle = { pl: 'Mglisty las', en: 'Misty Forest' }
-  const nextRealmUnlocked = false
+  const preferredChapterIndex = getPreferredMapChapterIndex(progress)
+  const [selectedChapterIndex, setSelectedChapterIndex] = useState(preferredChapterIndex)
+  const selectedChapter = chapters[selectedChapterIndex] ?? chapters[0]
+  const previousChapterIndex = selectedChapterIndex - 1
+  const nextChapterIndex = selectedChapterIndex + 1
+  const canSelectPreviousChapter =
+    previousChapterIndex >= 0 && isChapterUnlocked(progress, chapters[previousChapterIndex])
+  const canSelectNextChapter =
+    nextChapterIndex < chapters.length && isChapterUnlocked(progress, chapters[nextChapterIndex])
   const realmTeaser = useMemo(
     () => MAP_REALM_TEASERS[Math.floor(Math.random() * MAP_REALM_TEASERS.length)],
     [],
@@ -465,6 +482,12 @@ function MapScreen({
     { x: '20%', y: '94%' },
   ]
 
+  useEffect(() => {
+    if (!isChapterUnlocked(progress, selectedChapter)) {
+      setSelectedChapterIndex(preferredChapterIndex)
+    }
+  }, [preferredChapterIndex, progress, selectedChapter])
+
   return (
     <Screen className="map-screen">
       <header className="map-header">
@@ -479,42 +502,74 @@ function MapScreen({
       </header>
 
       <section className="realm-switcher" aria-label={translate('map.realmSelector')}>
-        <button aria-label={translate('map.previousRealm')} className="realm-arrow" disabled type="button">
+        <button
+          aria-label={translate('map.previousRealm')}
+          className="realm-arrow"
+          disabled={!canSelectPreviousChapter}
+          onClick={() => setSelectedChapterIndex(previousChapterIndex)}
+          type="button"
+        >
           <ChevronLeft />
         </button>
         <div className="realm-track">
-          <div className="realm-item active">
-            <img src={MAP_RAINFOREST_THUMB_SRC} alt="" />
-            <div>
-              <strong>{localize(progress.locale, chapter.title)}</strong>
-              <span>
-                <Leaf size={15} />
-                {translate('map.progress', {
-                  completed: completedCount,
-                  total: chapter.missions.length,
-                })}
-              </span>
-            </div>
-          </div>
-          <div className={`realm-item next ${nextRealmUnlocked ? '' : 'locked'}`}>
-            <img src={MAP_MISTY_THUMB_SRC} alt="" />
-            <div>
-              <strong>{localize(progress.locale, mistyForestTitle)}</strong>
-              <span aria-label={translate('map.lockedRealm')} className="realm-lock-icon" role="img">
-                <Lock size={16} />
-              </span>
-            </div>
-          </div>
+          {chapters.map((chapter, index) => {
+            const chapterUnlocked = isChapterUnlocked(progress, chapter)
+            const chapterCompletedCount = chapter.missions.filter((mission) =>
+              isMissionCompleted(progress, mission.id),
+            ).length
+            const className = [
+              'realm-item',
+              index === selectedChapterIndex ? 'active' : '',
+              index > selectedChapterIndex ? 'next' : '',
+              chapterUnlocked ? '' : 'locked',
+            ]
+              .filter(Boolean)
+              .join(' ')
+
+            return (
+              <button
+                className={className}
+                disabled={!chapterUnlocked}
+                key={chapter.id}
+                onClick={() => setSelectedChapterIndex(index)}
+                type="button"
+              >
+                <img src={getChapterMapThumbnail(chapter.id)} alt="" />
+                <div>
+                  <strong>{localize(progress.locale, chapter.title)}</strong>
+                  {chapterUnlocked ? (
+                    <span>
+                      <Leaf size={15} />
+                      {translate('map.progress', {
+                        completed: chapterCompletedCount,
+                        total: chapter.missions.length,
+                      })}
+                    </span>
+                  ) : (
+                    <span aria-label={translate('map.lockedRealm')} className="realm-lock-icon" role="img">
+                      <Lock size={16} />
+                    </span>
+                  )}
+                </div>
+              </button>
+            )
+          })}
         </div>
-        <button aria-label={translate('map.nextRealm')} className="realm-arrow" type="button">
+        <button
+          aria-label={translate('map.nextRealm')}
+          className="realm-arrow"
+          disabled={!canSelectNextChapter}
+          onClick={() => setSelectedChapterIndex(nextChapterIndex)}
+          type="button"
+        >
           <ChevronRight />
         </button>
       </section>
 
-      <section className="forest-map" aria-label={localize(progress.locale, chapter.title)}>
-        <ForestMapArt />
+      <section className="forest-map" aria-label={localize(progress.locale, selectedChapter.title)}>
+        <ForestMapArt chapterId={selectedChapter.id} />
         {nodes.map((node, index) => {
-          const mission = chapter.missions[index]
+          const mission = selectedChapter.missions[index]
           const unlocked = mission ? isMissionUnlocked(progress, mission.id) : false
           const completed = mission ? isMissionCompleted(progress, mission.id) : false
           const isCurrent = mission ? unlocked && !completed : false
@@ -542,6 +597,36 @@ function MapScreen({
       </section>
     </Screen>
   )
+}
+
+function getPreferredMapChapterIndex(progress: Progress) {
+  const currentChapterIndex = chapters.findIndex((chapter) =>
+    chapter.missions.some((mission) => isMissionUnlocked(progress, mission.id) && !isMissionCompleted(progress, mission.id)),
+  )
+
+  if (currentChapterIndex >= 0) {
+    return currentChapterIndex
+  }
+
+  for (let index = chapters.length - 1; index >= 0; index -= 1) {
+    if (isChapterUnlocked(progress, chapters[index])) {
+      return index
+    }
+  }
+
+  return 0
+}
+
+function isChapterUnlocked(progress: Progress, chapter = chapters[0]) {
+  return chapter.missions.some((mission) => isMissionUnlocked(progress, mission.id))
+}
+
+function getChapterMapThumbnail(chapterId: string) {
+  return CHAPTER_MAP_ASSETS[chapterId]?.thumb ?? CHAPTER_MAP_ASSETS.rainforest.thumb
+}
+
+function getChapterMapBoard(chapterId: string) {
+  return CHAPTER_MAP_ASSETS[chapterId]?.board ?? CHAPTER_MAP_ASSETS.rainforest.board
 }
 
 function CustomAdventureSetupScreen({
@@ -1191,7 +1276,9 @@ function findAdventureByRoute({
   missionId?: string
 }) {
   if (missionId) {
-    return chapters.flatMap((chapter) => chapter.missions).find((candidate) => candidate.id === missionId)
+    const canonicalMissionId = getCanonicalMissionId(missionId)
+
+    return chapters.flatMap((chapter) => chapter.missions).find((candidate) => candidate.id === canonicalMissionId)
   }
 
   const chapterNumber = parsePositiveInteger(chapterId)
@@ -1772,10 +1859,10 @@ function LeafRating({ leaves }: { leaves: number }) {
   )
 }
 
-function ForestMapArt() {
+function ForestMapArt({ chapterId }: { chapterId: string }) {
   return (
     <div className="forest-art">
-      <img className="forest-board-image" src={MAP_RAINFOREST_BOARD_SRC} alt="" />
+      <img className="forest-board-image" src={getChapterMapBoard(chapterId)} alt="" />
     </div>
   )
 }

@@ -8,6 +8,25 @@ describe('chapter content', () => {
     expect(chapters[0].missions).toHaveLength(18)
   })
 
+  it('adds the misty forest chapter with eighteen reusable adventures', () => {
+    const mistyForest = chapters.find((chapter) => chapter.id === 'misty-forest')
+
+    expect(mistyForest).toBeTruthy()
+    expect(mistyForest?.badgeId).toBe('misty-forest-pathfinder')
+    expect(mistyForest?.missions).toHaveLength(18)
+    expect(mistyForest?.missions[0]).toMatchObject({
+      chapterId: 'misty-forest',
+      number: 1,
+      slug: 'first-steps-in-the-mist',
+      exerciseIds: ['heelTrail', 'quietHeelMoss', 'leafRollStep', 'berryFootPress', 'calfStretch'],
+    })
+    expect(mistyForest?.missions[17]).toMatchObject({
+      chapterId: 'misty-forest',
+      number: 18,
+      slug: 'great-misty-expedition',
+    })
+  })
+
   it('derives stable adventure ids from chapter order and slugs', () => {
     const adventureIds = new Set<string>()
 
@@ -18,7 +37,7 @@ describe('chapter content', () => {
         expect(mission.chapterId).toBe(chapter.id)
         expect(mission.number).toBe(index + 1)
         expect(mission.slug).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
-        expect(mission.id).toBe(`mission-${mission.number}-${mission.slug}`)
+        expect(mission.id).toBe(`${chapter.id}-adventure-${mission.number}-${mission.slug}`)
         expect(slugs.has(mission.slug)).toBe(false)
         expect(adventureIds.has(mission.id)).toBe(false)
         slugs.add(mission.slug)
@@ -54,14 +73,67 @@ describe('chapter content', () => {
     })
   })
 
-  it('keeps spicy variants in challenge options instead of health notes', () => {
+  it('includes the new standalone exercise drafts in the shared exercise library', () => {
+    const newExerciseIds = [
+      'heelTrail',
+      'quietHeelMoss',
+      'leafRollStep',
+      'kneeTunnelSquat',
+      'forestCrabKnees',
+      'clamshellLeaf',
+      'softIslandClock',
+      'backNutOnFloor',
+      'groundWingSlides',
+      'turtleNeck',
+      'bellyBalloon',
+      'leafDeadBug',
+      'ribWingSlides',
+    ] as const
+
+    newExerciseIds.forEach((exerciseId) => {
+      const exercise = exerciseLibrary[exerciseId]
+
+      expect(exercise.id).toBe(exerciseId)
+      expect(exercise.title.pl).toBeTruthy()
+      expect(exercise.title.en).toBeTruthy()
+      expect(exercise.description.pl).toBeTruthy()
+      expect(exercise.description.en).toBeTruthy()
+      expect(exercise.estimatedMinutes).toBeGreaterThan(0)
+      expect(exercise.energyLeaves).toBeGreaterThan(0)
+      expect(exercise.categories.length).toBeGreaterThan(0)
+      expect(exercise.equipment.length).toBeGreaterThan(0)
+    })
+  })
+
+  it('keeps harder variants in challenge options instead of health notes', () => {
     const exercises: Exercise[] = Object.values(exerciseLibrary)
     const challengeOptions = exercises.filter((exercise) => exercise.challengeOption)
 
-    expect(challengeOptions).toHaveLength(3)
+    expect(challengeOptions.length).toBeGreaterThanOrEqual(8)
     challengeOptions.forEach((exercise) => {
       expect(exercise.challengeOption?.pl).toContain('Podkręcona wersja')
-      expect(exercise.challengeOption?.en).toContain('Spicy version')
+      expect(exercise.challengeOption?.en).toMatch(/^(Challenge option|Spicy version):/)
+    })
+
+    expect(exerciseLibrary.heelTrail.challengeOption).toEqual({
+      pl: 'Podkręcona wersja: po każdym kroku zatrzymaj się na 1 sekundę.',
+      en: 'Challenge option: pause for 1 second after each step.',
+    })
+    expect(exerciseLibrary.quietHeelMoss.challengeOption).toEqual({
+      pl: 'Podkręcona wersja: zrób ćwiczenie na macie sensorycznej z wypustkami, jeśli jest wygodnie.',
+      en: 'Challenge option: try it on a sensory mat with bumps if it feels comfortable.',
+    })
+    expect(exerciseLibrary.kneeTunnelSquat.challengeOption).toEqual({
+      pl: 'Podkręcona wersja: zatrzymaj się na dole na 2 sekundy.',
+      en: 'Challenge option: pause at the bottom for 2 seconds.',
+    })
+    expect(exerciseLibrary.softIslandClock.challengeOption).toEqual({
+      pl: 'Podkręcona wersja: dotknij podłogi w czterech kierunkach: przód, bok, tył i skos.',
+      en: 'Challenge option: touch the floor in four directions: front, side, back, and diagonal.',
+    })
+    expect(exerciseLibrary.leafDeadBug.challengeOption).toEqual({
+      pl: 'Podkręcona wersja: trzymaj mały pluszowy liść albo miękką piłeczkę na brzuchu i postaraj się, żeby nie spadła.',
+      en: 'Challenge option: keep a small plush leaf or soft ball on your belly and try not to let it fall.',
     })
   })
 

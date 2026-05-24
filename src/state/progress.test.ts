@@ -6,11 +6,14 @@ import {
   clearProgress,
   completeMission,
   createInitialProgress,
+  getCanonicalMissionId,
   getMissionPlannedSeconds,
   loadProgress,
 } from './progress'
 
 const storageKey = 'gibko-progress-v1'
+const legacyMissionId = (mission: { number: number; slug: string }) =>
+  `mission-${mission.number}-${mission.slug}`
 
 describe('progress logic', () => {
   beforeEach(() => {
@@ -230,10 +233,52 @@ describe('progress logic', () => {
     expect(result.progress.unlockedMissionIds).toEqual(progress.unlockedMissionIds)
   })
 
+  it('unlocks the first misty forest adventure after completing the rainforest chapter', () => {
+    const rainforest = chapters[0]
+    const mistyForest = chapters[1]
+    const lastRainforestMission = rainforest.missions[rainforest.missions.length - 1]
+    const progress = {
+      ...createInitialProgress(),
+      completedMissionIds: rainforest.missions.slice(0, -1).map((mission) => mission.id),
+      unlockedMissionIds: rainforest.missions.map((mission) => mission.id),
+    }
+    const result = completeMission(
+      progress,
+      lastRainforestMission,
+      120,
+      new Date('2026-05-12T12:00:00'),
+    )
+
+    expect(result.progress.completedMissionIds).toContain(lastRainforestMission.id)
+    expect(result.progress.unlockedMissionIds).toContain(mistyForest.missions[0].id)
+  })
+
   it('awards the chapter badge when all missions in the chapter are complete', () => {
     const chapter = chapters[0]
     const initialResult = {
       progress: createInitialProgress(),
+      earnedBadgeIds: [] as string[],
+      starsEarned: 1,
+      xpEarned: 0,
+    }
+    const finalResult = chapter.missions.reduce(
+      (result, mission, index) =>
+        completeMission(result.progress, mission, 120, new Date(2026, 4, 12, 8 + index)),
+      initialResult,
+    )
+
+    expect(finalResult.earnedBadgeIds).toContain(chapter.badgeId)
+    expect(finalResult.progress.badgeIds).toContain(chapter.badgeId)
+  })
+
+  it('awards the misty forest badge when the second chapter is complete', () => {
+    const chapter = chapters[1]
+    const initialProgress = {
+      ...createInitialProgress(),
+      unlockedMissionIds: chapters.flatMap((candidate) => candidate.missions.map((mission) => mission.id)),
+    }
+    const initialResult = {
+      progress: initialProgress,
       earnedBadgeIds: [] as string[],
       starsEarned: 1,
       xpEarned: 0,
@@ -329,9 +374,9 @@ describe('progress logic', () => {
       exerciseSecondsToday: 120,
       totalExerciseSeconds: 120,
       completedMissionIds: [
-        chapters[0].missions[0].id,
-        chapters[0].missions[1].id,
-        chapters[0].missions[2].id,
+        legacyMissionId(chapters[0].missions[0]),
+        legacyMissionId(chapters[0].missions[1]),
+        legacyMissionId(chapters[0].missions[2]),
       ],
       unlockedMissionIds: [],
       badgeIds: [],
@@ -345,8 +390,39 @@ describe('progress logic', () => {
     expect(loadedProgress.childName).toBe('Ola')
     expect(loadedProgress.consecutiveActiveDays).toBe(1)
     expect(loadedProgress.missionStars).toEqual({})
+    expect(loadedProgress.completedMissionIds).toEqual([
+      chapters[0].missions[0].id,
+      chapters[0].missions[1].id,
+      chapters[0].missions[2].id,
+    ])
     expect(loadedProgress.unlockedMissionIds).toContain(chapters[0].missions[0].id)
     expect(loadedProgress.unlockedMissionIds).toContain(chapters[0].missions[3].id)
+  })
+
+  it('normalizes old local progress by unlocking the next chapter when rainforest is complete', () => {
+    const rainforest = chapters[0]
+    const mistyForest = chapters[1]
+    const storedProgress = {
+      ...createInitialProgress('pl'),
+      acceptedSafety: true,
+      childName: 'Ola',
+      completedMissionIds: rainforest.missions.map(legacyMissionId),
+      unlockedMissionIds: rainforest.missions.map(legacyMissionId),
+    }
+
+    localStorage.setItem(storageKey, JSON.stringify(storedProgress))
+
+    const loadedProgress = loadProgress()
+
+    expect(loadedProgress.unlockedMissionIds).toContain(mistyForest.missions[0].id)
+  })
+
+  it('canonicalizes old mission ids into chapter-scoped adventure ids', () => {
+    const mission = chapters[1].missions[0]
+
+    expect(getCanonicalMissionId(mission.id)).toBe(mission.id)
+    expect(getCanonicalMissionId(legacyMissionId(mission))).toBe(mission.id)
+    expect(getCanonicalMissionId('missing-mission')).toBe('missing-mission')
   })
 
   it('creates fresh progress with the requested locale', () => {

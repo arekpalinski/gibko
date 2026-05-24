@@ -157,6 +157,43 @@ describe('mission flow', () => {
     )
   })
 
+  it('selects the misty forest map after the rainforest chapter is complete and allows going back', async () => {
+    const rainforest = chapters[0]
+    const mistyForest = chapters[1]
+    const progress = {
+      ...createInitialProgress('en'),
+      acceptedSafety: true,
+      childName: 'Alex',
+      completedMissionIds: rainforest.missions.map((mission) => mission.id),
+      unlockedMissionIds: [
+        ...rainforest.missions.map((mission) => mission.id),
+        mistyForest.missions[0].id,
+      ],
+    }
+    saveProgress(progress)
+
+    render(
+      <MemoryRouter initialEntries={['/map']}>
+        <App />
+      </MemoryRouter>,
+    )
+
+    const mistyNodeLink = await screen.findByRole('link', { name: mistyForest.missions[0].title.en })
+
+    expect(mistyNodeLink).toHaveAttribute(
+      'href',
+      `/chapter/${mistyForest.id}/adventure/${mistyForest.missions[0].slug}`,
+    )
+    expect(screen.queryByRole('link', { name: rainforest.missions[0].title.en })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Previous realm' }))
+
+    expect(await screen.findByRole('link', { name: rainforest.missions[0].title.en })).toHaveAttribute(
+      'href',
+      `/chapter/${rainforest.id}/adventure/${rainforest.missions[0].slug}`,
+    )
+  })
+
   it('opens the next adventure at its first exercise from the completion screen', async () => {
     const firstMission = chapters[0].missions[0]
     const secondMission = chapters[0].missions[1]
@@ -190,6 +227,39 @@ describe('mission flow', () => {
     expect(screen.getByRole('heading', { name: secondMission.exercises[0].title.en })).toBeInTheDocument()
     expect(screen.getByText(`1 / ${secondMission.exercises.length}`)).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Adventure complete!' })).not.toBeInTheDocument()
+  })
+
+  it('links from the last rainforest adventure completion into the first misty forest adventure', async () => {
+    const rainforest = chapters[0]
+    const lastRainforestMission = rainforest.missions[rainforest.missions.length - 1]
+    const firstMistyMission = chapters[1].missions[0]
+    const progress = {
+      ...createInitialProgress('en'),
+      acceptedSafety: true,
+      childName: 'Alex',
+      completedMissionIds: rainforest.missions.slice(0, -1).map((mission) => mission.id),
+      unlockedMissionIds: rainforest.missions.map((mission) => mission.id),
+    }
+    saveProgress(progress)
+
+    render(
+      <MemoryRouter
+        initialEntries={[`/chapter/${lastRainforestMission.chapterId}/adventure/${lastRainforestMission.slug}`]}
+      >
+        <App />
+      </MemoryRouter>,
+    )
+
+    for (let index = 0; index < lastRainforestMission.exercises.length; index += 1) {
+      fireEvent.click(await screen.findByRole('button', { name: 'Start' }))
+      fireEvent.click(await screen.findByRole('button', { name: 'Done' }))
+    }
+
+    expect(await screen.findByRole('heading', { name: 'Adventure complete!' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Next adventure' })).toHaveAttribute(
+      'href',
+      `/chapter/${firstMistyMission.chapterId}/adventure/${firstMistyMission.slug}`,
+    )
   })
 
   it('keeps exercise time when children go back and resume completed exercises', async () => {
@@ -335,6 +405,7 @@ describe('mission flow', () => {
 
   it('keeps legacy mission URLs working while using chapter adventure URLs', async () => {
     const firstMission = chapters[0].missions[0]
+    const legacyMissionId = `mission-${firstMission.number}-${firstMission.slug}`
     const progress = {
       ...createInitialProgress('en'),
       acceptedSafety: true,
@@ -343,7 +414,7 @@ describe('mission flow', () => {
     saveProgress(progress)
 
     render(
-      <MemoryRouter initialEntries={[`/mission/${firstMission.id}`]}>
+      <MemoryRouter initialEntries={[`/mission/${legacyMissionId}`]}>
         <App />
       </MemoryRouter>,
     )

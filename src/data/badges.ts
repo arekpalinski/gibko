@@ -8,6 +8,12 @@ export const badges: Badge[] = [
     icon: 'gibbon',
   },
   {
+    id: 'misty-forest-pathfinder',
+    titleKey: 'badges.mistyForestPathfinder.title',
+    descriptionKey: 'badges.mistyForestPathfinder.description',
+    icon: 'footprints',
+  },
+  {
     id: 'morning-leaf',
     titleKey: 'badges.morningLeaf.title',
     descriptionKey: 'badges.morningLeaf.description',

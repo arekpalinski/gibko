@@ -782,7 +782,9 @@ input:focus {
   background: transparent;
   border: 0;
   border-radius: 0;
+  color: inherit;
   display: grid;
+  font: inherit;
   gap: 8px;
   grid-template-columns: 42px minmax(0, 1fr);
   min-height: 58px;
@@ -790,6 +792,14 @@ input:focus {
   overflow: visible;
   padding: 0;
   position: relative;
+}
+
+.realm-item:not(:disabled) {
+  cursor: pointer;
+}
+
+.realm-item:disabled {
+  cursor: not-allowed;
 }
 
 .realm-item.active {

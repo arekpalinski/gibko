@@ -59,6 +59,20 @@ export function isMissionCompleted(progress: Progress, missionId: string) {
   return progress.completedMissionIds.includes(missionId)
 }
 
+export function getCanonicalMissionId(missionId: string) {
+  const allMissions = chapters.flatMap((chapter) => chapter.missions)
+
+  if (allMissions.some((mission) => mission.id === missionId)) {
+    return missionId
+  }
+
+  const legacyMission = allMissions.find(
+    (mission) => missionId === getLegacyMissionId(mission),
+  )
+
+  return legacyMission?.id ?? missionId
+}
+
 export function completeMission(
   progress: Progress,
   mission: Mission,
@@ -66,44 +80,45 @@ export function completeMission(
   now = new Date(),
   usedDifficultyHelp = false,
 ): MissionResult {
+  const normalizedProgress = normalizeProgress(progress, now)
   const today = toDateKey(now)
   const yesterday = toDateKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1))
-  const alreadyCompleted = progress.completedMissionIds.includes(mission.id)
-  const activeDayCount = Math.max(0, progress.streakDays)
-  const previousConsecutiveActiveDays = progress.lastActiveDate
-    ? Math.max(1, progress.consecutiveActiveDays)
+  const alreadyCompleted = normalizedProgress.completedMissionIds.includes(mission.id)
+  const activeDayCount = Math.max(0, normalizedProgress.streakDays)
+  const previousConsecutiveActiveDays = normalizedProgress.lastActiveDate
+    ? Math.max(1, normalizedProgress.consecutiveActiveDays)
     : 0
   const streakDays =
-    progress.lastActiveDate === today
+    normalizedProgress.lastActiveDate === today
       ? Math.max(1, activeDayCount)
       : activeDayCount + 1
   const consecutiveActiveDays =
-    progress.lastActiveDate === today
+    normalizedProgress.lastActiveDate === today
       ? Math.max(1, previousConsecutiveActiveDays)
-      : progress.lastActiveDate === yesterday
+      : normalizedProgress.lastActiveDate === yesterday
         ? previousConsecutiveActiveDays + 1
         : 1
 
   const completedMissionIds = alreadyCompleted
-    ? progress.completedMissionIds
-    : [...progress.completedMissionIds, mission.id]
+    ? normalizedProgress.completedMissionIds
+    : [...normalizedProgress.completedMissionIds, mission.id]
   const exerciseSecondsToday =
-    progress.lastActiveDate === today
-      ? progress.exerciseSecondsToday + actualSeconds
+    normalizedProgress.lastActiveDate === today
+      ? normalizedProgress.exerciseSecondsToday + actualSeconds
       : actualSeconds
 
-  const unlockedMissionIds = unlockNextMission(progress.unlockedMissionIds, mission.id)
+  const unlockedMissionIds = unlockNextMission(normalizedProgress.unlockedMissionIds, mission.id)
   const earnedBadgeIds = getEarnedBadges(
-    { ...progress, completedMissionIds, consecutiveActiveDays, exerciseSecondsToday, streakDays },
+    { ...normalizedProgress, completedMissionIds, consecutiveActiveDays, exerciseSecondsToday, streakDays },
     mission,
     now,
   )
-  const badgeIds = Array.from(new Set([...progress.badgeIds, ...earnedBadgeIds]))
+  const badgeIds = Array.from(new Set([...normalizedProgress.badgeIds, ...earnedBadgeIds]))
   const starsEarned = calculateMissionStars(mission, actualSeconds, usedDifficultyHelp)
   const xpEarned = calculateMissionXp(mission, actualSeconds)
   const missionStars = {
-    ...progress.missionStars,
-    [mission.id]: Math.max(progress.missionStars[mission.id] ?? 0, starsEarned),
+    ...normalizedProgress.missionStars,
+    [mission.id]: Math.max(normalizedProgress.missionStars[mission.id] ?? 0, starsEarned),
   }
 
   return {
@@ -111,13 +126,13 @@ export function completeMission(
     starsEarned,
     xpEarned,
     progress: {
-      ...progress,
-      xp: progress.xp + xpEarned,
+      ...normalizedProgress,
+      xp: normalizedProgress.xp + xpEarned,
       streakDays,
       consecutiveActiveDays,
       lastActiveDate: today,
       exerciseSecondsToday,
-      totalExerciseSeconds: progress.totalExerciseSeconds + actualSeconds,
+      totalExerciseSeconds: normalizedProgress.totalExerciseSeconds + actualSeconds,
       completedMissionIds,
       missionStars,
       unlockedMissionIds,
@@ -174,7 +189,7 @@ function getMissionFullRewardSeconds(mission: Mission) {
 
 function unlockNextMission(unlockedMissionIds: string[], missionId: string) {
   const allMissions = chapters.flatMap((chapter) => chapter.missions)
-  const currentIndex = allMissions.findIndex((mission) => mission.id === missionId)
+  const currentIndex = allMissions.findIndex((mission) => mission.id === getCanonicalMissionId(missionId))
   const nextMission = allMissions[currentIndex + 1]
 
   if (!nextMission || unlockedMissionIds.includes(nextMission.id)) {
@@ -226,12 +241,12 @@ function getEarnedBadges(progress: Progress, mission: Mission, now: Date) {
 
 function normalizeProgress(progress: Progress, now = new Date()): Progress {
   const today = toDateKey(now)
-  const normalized = {
+  const normalized = normalizeProgressMissionIds({
     ...progress,
     consecutiveActiveDays: progress.consecutiveActiveDays ?? (progress.lastActiveDate ? 1 : 0),
     exerciseSecondsToday: progress.lastActiveDate === today ? progress.exerciseSecondsToday : 0,
     missionStars: progress.missionStars ?? {},
-  }
+  })
 
   const unlockedMissionIds = normalizeUnlockedMissions(normalized)
 
@@ -239,6 +254,30 @@ function normalizeProgress(progress: Progress, now = new Date()): Progress {
     ...normalized,
     unlockedMissionIds,
   }
+}
+
+function normalizeProgressMissionIds(progress: Progress): Progress {
+  const missionStars = Object.entries(progress.missionStars).reduce<Record<string, number>>(
+    (normalizedStars, [missionId, stars]) => {
+      const canonicalMissionId = getCanonicalMissionId(missionId)
+
+      normalizedStars[canonicalMissionId] = Math.max(normalizedStars[canonicalMissionId] ?? 0, stars)
+
+      return normalizedStars
+    },
+    {},
+  )
+
+  return {
+    ...progress,
+    completedMissionIds: normalizeMissionIdList(progress.completedMissionIds),
+    missionStars,
+    unlockedMissionIds: normalizeMissionIdList(progress.unlockedMissionIds),
+  }
+}
+
+function normalizeMissionIdList(missionIds: string[]) {
+  return Array.from(new Set(missionIds.map(getCanonicalMissionId)))
 }
 
 function normalizeUnlockedMissions(progress: Progress) {
@@ -263,4 +302,8 @@ function toDateKey(date: Date) {
   const day = String(date.getDate()).padStart(2, '0')
 
   return `${year}-${month}-${day}`
+}
+
+function getLegacyMissionId(mission: Mission) {
+  return `mission-${mission.number}-${mission.slug}`
 }
