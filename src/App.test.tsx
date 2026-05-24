@@ -30,10 +30,31 @@ describe('mission flow', () => {
 
     const startLink = await screen.findByRole('link', { name: 'Start' })
 
+    expect(screen.getByRole('navigation')).toBeInTheDocument()
     expect(startLink).toHaveAttribute(
       'href',
       `/chapter/${firstMission.chapterId}/adventure/${firstMission.slug}`,
     )
+  })
+
+  it('hides the bottom navigation while an adventure exercise is active', async () => {
+    const firstMission = chapters[0].missions[0]
+    const progress = {
+      ...createInitialProgress('en'),
+      acceptedSafety: true,
+      childName: 'Alex',
+    }
+    saveProgress(progress)
+
+    render(
+      <MemoryRouter initialEntries={[`/chapter/${firstMission.chapterId}/adventure/${firstMission.slug}`]}>
+        <App />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText(firstMission.title.en)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: firstMission.exercises[0].title.en })).toBeInTheDocument()
+    expect(screen.queryByRole('navigation')).not.toBeInTheDocument()
   })
 
   it('shows the install button only when the browser install prompt is available', async () => {

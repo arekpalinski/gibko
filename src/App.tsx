@@ -123,6 +123,7 @@ export const MAP_REALM_TEASERS: LocalizedText[] = [
 ]
 
 export function App() {
+  const location = useLocation()
   const [progress, setProgressState] = useState(loadProgress)
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
 
@@ -162,6 +163,7 @@ export function App() {
 
   const translate = (key: string, values?: Record<string, string | number>) =>
     t(progress.locale, key, values)
+  const hideBottomNav = shouldHideBottomNav(location.pathname)
 
   if (!progress.acceptedSafety || !progress.childName) {
     return (
@@ -237,9 +239,17 @@ export function App() {
             element={<SettingsScreen progress={progress} setProgress={setProgress} translate={translate} />}
           />
         </Routes>
-        <BottomNav translate={translate} />
+        {!hideBottomNav ? <BottomNav translate={translate} /> : null}
       </main>
     </div>
+  )
+}
+
+function shouldHideBottomNav(pathname: string) {
+  return (
+    pathname === '/custom-adventure/play' ||
+    pathname.startsWith('/mission/') ||
+    (pathname.startsWith('/chapter/') && pathname.includes('/adventure/'))
   )
 }
 
