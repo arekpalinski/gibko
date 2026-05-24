@@ -66,6 +66,10 @@ const GIBKO_HELLO_SRC = assetPath('gibko-hello-transparent.webp')
 const GIBKO_PROFILE_AVATAR_SRC = assetPath('gibko-profile-avatar.webp')
 const GIBKO_CUSTOM_ADVENTURE_SRC = assetPath('gibko-custom-adventure.webp')
 const GIBKO_CUSTOM_PREVIEW_SRC = assetPath('gibko-custom-preview.webp')
+const MAP_RAINFOREST_BOARD_SRC = assetPath('map-rainforest-board.webp')
+const MAP_RAINFOREST_THUMB_SRC = assetPath('map-rainforest-thumb.webp')
+const MAP_MISTY_THUMB_SRC = assetPath('map-misty-thumb.webp')
+const GIBKO_NEXT_CHAPTER_SRC = assetPath('gibko-next-chapter.webp')
 const MISSION_COMPLETED_IMAGES = [
   assetPath('gibko-mission-completed-1.webp'),
   assetPath('gibko-mission-completed-2.webp'),
@@ -86,6 +90,36 @@ const EXPLORER_TITLES: LocalizedText[] = [
   { pl: 'Mistrz Leśnego Rytmu', en: 'Forest Rhythm Master' },
   { pl: 'Strażnik Wielkiego Lasu', en: 'Great Forest Guardian' },
   { pl: 'Legenda Koron Drzew', en: 'Canopy Legend' },
+]
+export const MAP_REALM_TEASERS: LocalizedText[] = [
+  {
+    pl: 'Ćwicz, zbieraj listki i odkrywaj nowe krainy!',
+    en: 'Exercise, collect leaves, and discover new realms!',
+  },
+  {
+    pl: 'Ruszaj się, zbieraj listki i idź dalej!',
+    en: 'Move, collect leaves, and keep going!',
+  },
+  {
+    pl: 'Każde ćwiczenie przybliża Cię do nowej krainy!',
+    en: 'Every exercise brings you closer to a new realm!',
+  },
+  {
+    pl: 'Ćwicz z Gibko i odkrywaj kolejne krainy!',
+    en: 'Exercise with Gibko and discover more realms!',
+  },
+  {
+    pl: 'Zrób przygodę i ruszaj do kolejnej krainy!',
+    en: 'Finish an adventure and move toward the next realm!',
+  },
+  {
+    pl: 'Rozciągaj się, zbieraj listki i odkrywaj las!',
+    en: 'Stretch, collect leaves, and discover the forest!',
+  },
+  {
+    pl: 'Każdy ruch prowadzi dalej!',
+    en: 'Every move leads you onward!',
+  },
 ]
 
 export function App() {
@@ -386,25 +420,31 @@ function MapScreen({
 }) {
   const chapter = chapters[0]
   const completedCount = chapter.missions.filter((mission) => isMissionCompleted(progress, mission.id)).length
+  const mistyForestTitle = { pl: 'Mglisty las', en: 'Misty Forest' }
+  const nextRealmUnlocked = false
+  const realmTeaser = useMemo(
+    () => MAP_REALM_TEASERS[Math.floor(Math.random() * MAP_REALM_TEASERS.length)],
+    [],
+  )
   const nodes = [
-    { x: '20%', y: '12%' },
-    { x: '50%', y: '8%' },
-    { x: '74%', y: '16%' },
-    { x: '58%', y: '27%' },
-    { x: '30%', y: '25%' },
-    { x: '20%', y: '38%' },
-    { x: '46%', y: '43%' },
-    { x: '72%', y: '38%' },
-    { x: '82%', y: '52%' },
-    { x: '58%', y: '58%' },
-    { x: '32%', y: '55%' },
-    { x: '18%', y: '68%' },
-    { x: '42%', y: '74%' },
-    { x: '70%', y: '70%' },
-    { x: '82%', y: '83%' },
-    { x: '58%', y: '90%' },
-    { x: '32%', y: '87%' },
-    { x: '18%', y: '94%' },
+    { x: '23%', y: '12%' },
+    { x: '52%', y: '12%' },
+    { x: '80%', y: '15%' },
+    { x: '66%', y: '28%' },
+    { x: '38%', y: '27%' },
+    { x: '18%', y: '42%' },
+    { x: '48%', y: '44%' },
+    { x: '78%', y: '42%' },
+    { x: '84%', y: '55%' },
+    { x: '58%', y: '55%' },
+    { x: '30%', y: '55%' },
+    { x: '18%', y: '75%' },
+    { x: '45%', y: '78%' },
+    { x: '72%', y: '75%' },
+    { x: '84%', y: '93%' },
+    { x: '64%', y: '94%' },
+    { x: '42%', y: '93%' },
+    { x: '20%', y: '94%' },
   ]
 
   return (
@@ -420,32 +460,41 @@ function MapScreen({
         </div>
       </header>
 
-      <section className="chapter-heading">
-        <div>
-          <p>{translate('map.chapter')}</p>
-          <h2>{localize(progress.locale, chapter.title)}</h2>
+      <section className="realm-switcher" aria-label={translate('map.realmSelector')}>
+        <button aria-label={translate('map.previousRealm')} className="realm-arrow" disabled type="button">
+          <ChevronLeft />
+        </button>
+        <div className="realm-track">
+          <div className="realm-item active">
+            <img src={MAP_RAINFOREST_THUMB_SRC} alt="" />
+            <div>
+              <strong>{localize(progress.locale, chapter.title)}</strong>
+              <span>
+                <Leaf size={15} />
+                {translate('map.progress', {
+                  completed: completedCount,
+                  total: chapter.missions.length,
+                })}
+              </span>
+            </div>
+          </div>
+          <div className={`realm-item next ${nextRealmUnlocked ? '' : 'locked'}`}>
+            <img src={MAP_MISTY_THUMB_SRC} alt="" />
+            <div>
+              <strong>{localize(progress.locale, mistyForestTitle)}</strong>
+              <span aria-label={translate('map.lockedRealm')} className="realm-lock-icon" role="img">
+                <Lock size={16} />
+              </span>
+            </div>
+          </div>
         </div>
-        <strong>
-          {translate('map.progress', {
-            completed: completedCount,
-            total: chapter.missions.length,
-          })}
-          <Leaf size={16} />
-        </strong>
+        <button aria-label={translate('map.nextRealm')} className="realm-arrow" type="button">
+          <ChevronRight />
+        </button>
       </section>
 
       <section className="forest-map" aria-label={localize(progress.locale, chapter.title)}>
         <ForestMapArt />
-        <svg className="map-path" viewBox="0 0 340 590" preserveAspectRatio="none">
-          <path
-            d="M70 110 C120 120, 150 130, 175 185 C195 225, 210 245, 235 290 C250 315, 220 350, 185 390 C145 435, 85 455, 95 505 C105 548, 195 525, 240 555"
-            fill="none"
-            stroke="#f3dcb4"
-            strokeDasharray="14 14"
-            strokeLinecap="round"
-            strokeWidth="7"
-          />
-        </svg>
         {nodes.map((node, index) => {
           const mission = chapter.missions[index]
           const unlocked = mission ? isMissionUnlocked(progress, mission.id) : false
@@ -467,6 +516,11 @@ function MapScreen({
             />
           )
         })}
+      </section>
+
+      <section className="realm-teaser-card">
+        <img className="realm-teaser-image" src={GIBKO_NEXT_CHAPTER_SRC} alt="" />
+        <p className="realm-teaser-message">{localize(progress.locale, realmTeaser)}</p>
       </section>
     </Screen>
   )
@@ -1538,7 +1592,11 @@ function MapNode({
 }) {
   const content = (
     <>
-      <div className={`map-node ${completed ? 'completed' : ''} ${isCurrent ? 'current' : ''}`}>
+      <div
+        className={`map-node ${completed ? 'completed' : ''} ${isCurrent ? 'current' : ''} ${
+          unlocked ? '' : 'locked'
+        }`}
+      >
         {unlocked ? index : <Lock />}
       </div>
       <div className="node-stars">
@@ -1577,65 +1635,7 @@ function LeafRating({ leaves }: { leaves: number }) {
 function ForestMapArt() {
   return (
     <div className="forest-art">
-      <div className="forest-layer layer-one" />
-      <div className="forest-layer layer-two" />
-      <div className="forest-layer layer-three" />
-      <svg className="river" viewBox="0 0 340 590" preserveAspectRatio="none">
-        <path
-          d="M305 110 C280 150, 292 200, 258 250 C230 292, 228 348, 250 402 C268 445, 310 490, 292 560"
-          fill="none"
-          opacity="0.95"
-          stroke="#1da8d8"
-          strokeLinecap="round"
-          strokeWidth="30"
-        />
-        <path
-          d="M305 110 C280 150, 292 200, 258 250 C230 292, 228 348, 250 402 C268 445, 310 490, 292 560"
-          fill="none"
-          opacity="0.45"
-          stroke="#6de7ff"
-          strokeLinecap="round"
-          strokeWidth="10"
-        />
-      </svg>
-      <div className="bridge">
-        <span />
-        <span />
-        <span />
-        <span />
-        <span />
-      </div>
-      <SimpleTree x="8%" y="18%" />
-      <SimpleTree x="70%" y="18%" />
-      <SimpleTree x="15%" y="43%" />
-      <SimpleTree x="74%" y="48%" />
-      <SimpleTree x="3%" y="76%" />
-      <SimpleTree x="68%" y="82%" />
-      <SimpleBush x="58%" y="22%" />
-      <SimpleBush x="64%" y="40%" />
-      <SimpleBush x="82%" y="64%" />
-      <SimpleBush x="8%" y="76%" />
-    </div>
-  )
-}
-
-function SimpleTree({ x, y }: { x: string; y: string }) {
-  return (
-    <div className="simple-tree" style={{ left: x, top: y }}>
-      <span />
-      <span />
-      <span />
-      <span />
-    </div>
-  )
-}
-
-function SimpleBush({ x, y }: { x: string; y: string }) {
-  return (
-    <div className="simple-bush" style={{ left: x, top: y }}>
-      <span />
-      <span />
-      <span />
+      <img className="forest-board-image" src={MAP_RAINFOREST_BOARD_SRC} alt="" />
     </div>
   )
 }

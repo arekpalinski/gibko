@@ -2,7 +2,7 @@ import '@testing-library/jest-dom/vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { App, getExplorerTitleProgress } from './App'
+import { App, MAP_REALM_TEASERS, getExplorerTitleProgress } from './App'
 import { badges } from './data/badges'
 import { chapters } from './data/chapters'
 import { customAdventureCategoryLabels, getAvailableCustomAdventureCategories } from './data/customAdventure'
@@ -117,6 +117,12 @@ describe('mission flow', () => {
 
     const mapNodeLink = await screen.findByRole('link', { name: firstMission.title.en })
 
+    expect(screen.getByLabelText('Realm selection')).toBeInTheDocument()
+    expect(screen.getByText('Misty Forest')).toBeInTheDocument()
+    expect(screen.getByLabelText('Locked')).toBeInTheDocument()
+    expect(
+      MAP_REALM_TEASERS.some((teaser) => screen.queryByText(teaser.en)),
+    ).toBe(true)
     expect(mapNodeLink).toHaveAttribute(
       'href',
       `/chapter/${firstMission.chapterId}/adventure/${firstMission.slug}`,

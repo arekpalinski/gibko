@@ -60,6 +60,7 @@ a {
 }
 
 .phone-frame {
+  --bottom-nav-height: 78px;
   background:
     radial-gradient(circle at 50% 0%, rgba(22, 214, 194, 0.11), transparent 34%),
     linear-gradient(180deg, #03162d 0%, #020f21 60%, #020d1c 100%);
@@ -148,6 +149,11 @@ p {
   color: var(--muted);
   font-size: 0.92rem;
   font-weight: 900;
+}
+
+.map-header .map-screen-label {
+  color: white;
+  font-size: 1.05rem;
 }
 
 .center-title-row {
@@ -692,10 +698,23 @@ input:focus {
 
 .xp-chip svg,
 .chapter-heading strong svg,
+.realm-item span svg,
 .node-stars svg,
 .summary-stars svg {
   color: var(--green);
   fill: currentColor;
+}
+
+.screen.map-screen {
+  align-content: start;
+  gap: 14px;
+  grid-auto-rows: max-content;
+  height: calc(100% - var(--bottom-nav-height, 78px));
+  padding-bottom: 18px;
+}
+
+.map-screen > * {
+  width: 100%;
 }
 
 .chapter-heading {
@@ -715,25 +734,172 @@ input:focus {
   gap: 6px;
 }
 
+.realm-switcher {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  display: grid;
+  gap: 9px;
+  grid-template-columns: 36px minmax(0, 1fr) 36px;
+  min-height: 58px;
+  overflow: visible;
+  padding: 0 2px;
+}
+
+.realm-arrow {
+  align-items: center;
+  background: rgba(2, 15, 33, 0.28);
+  border: 0;
+  border-radius: 999px;
+  color: white;
+  display: inline-flex;
+  height: 36px;
+  justify-content: center;
+  place-self: center;
+  width: 36px;
+}
+
+.realm-switcher > .realm-arrow:first-child {
+  grid-column: 1;
+}
+
+.realm-switcher > .realm-arrow:last-child {
+  grid-column: 3;
+}
+
+.realm-track {
+  display: grid;
+  gap: 12px;
+  grid-column: 2;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+}
+
+.realm-item {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 42px minmax(0, 1fr);
+  min-height: 58px;
+  min-width: 0;
+  overflow: visible;
+  padding: 0;
+  position: relative;
+}
+
+.realm-item.active {
+  background: transparent;
+  border-color: transparent;
+}
+
+.realm-item.next {
+  background: transparent;
+}
+
+.realm-item img {
+  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.32));
+  height: 42px;
+  opacity: 1;
+  object-fit: contain;
+  width: 42px;
+}
+
+.realm-item div {
+  min-width: 0;
+  position: relative;
+  text-align: center;
+  text-shadow: 0 2px 6px rgba(2, 15, 33, 0.86);
+  z-index: 1;
+}
+
+.realm-item strong,
+.realm-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.realm-item strong {
+  color: var(--cyan);
+  display: block;
+  font-size: 0.84rem;
+  font-weight: 950;
+  line-height: 1.08;
+  overflow: visible;
+  text-align: center;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.realm-item span {
+  align-items: center;
+  color: rgba(255, 255, 255, 0.9);
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 950;
+  gap: 5px;
+  justify-content: center;
+  line-height: 1.08;
+  margin-top: 3px;
+  width: 100%;
+}
+
+.realm-lock-icon {
+  justify-content: center;
+  width: 100%;
+}
+
+.realm-item.locked {
+  opacity: 0.72;
+}
+
+.realm-item.locked .realm-lock-icon svg {
+  color: rgba(255, 255, 255, 0.64);
+  fill: none;
+}
+
 .forest-map {
-  background: #0c2740;
-  border: 1px solid var(--line);
-  border-radius: 28px;
-  height: 720px;
-  min-height: 720px;
+  background: #082439;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 26px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 20px 45px rgba(0, 0, 0, 0.22);
+  height: 760px;
+  min-height: 760px;
   overflow: hidden;
   position: relative;
 }
 
-.forest-art,
-.map-path,
-.river {
+.forest-art {
   inset: 0;
   position: absolute;
 }
 
 .forest-art {
-  background: linear-gradient(180deg, #0b3355 0%, #0c2f4d 50%, #08253d 100%);
+  background: #08253a;
+}
+
+.forest-art::before {
+  background:
+    radial-gradient(circle at 50% 35%, rgba(22, 214, 194, 0.18), transparent 0 22%, transparent 44%),
+    linear-gradient(180deg, rgba(2, 15, 33, 0.06), rgba(2, 15, 33, 0.26));
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.forest-board-image {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
 }
 
 .forest-layer {
@@ -866,7 +1032,7 @@ input:focus {
 .map-node-wrap {
   position: absolute;
   transform: translate(-50%, -50%);
-  width: 86px;
+  width: 78px;
   z-index: 5;
 }
 
@@ -879,16 +1045,30 @@ input:focus {
 .map-node {
   align-items: center;
   background: radial-gradient(circle at 30% 30%, #233248, #111a28 75%);
-  border: 4px solid #6f7788;
+  border: 3px solid #6f7788;
   border-radius: 50%;
   box-shadow: 0 18px 28px rgba(0, 0, 0, 0.32);
   color: rgba(255, 255, 255, 0.95);
   display: grid;
-  font-size: 1.85rem;
+  font-size: 1.65rem;
   font-weight: 950;
-  height: 76px;
+  height: 66px;
   place-items: center;
-  width: 76px;
+  width: 66px;
+}
+
+.map-node.locked {
+  background: radial-gradient(circle at 30% 30%, #253145, #121927 75%);
+  border-color: #687385;
+  border-width: 3px;
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.28);
+  height: 54px;
+  width: 54px;
+}
+
+.map-node.locked svg {
+  height: 24px;
+  width: 24px;
 }
 
 .map-node.completed,
@@ -918,6 +1098,40 @@ input:focus {
 .node-stars strong {
   color: var(--green);
   font-size: 0.8rem;
+}
+
+.realm-teaser-card {
+  align-items: center;
+  background:
+    linear-gradient(90deg, rgba(2, 15, 33, 0.12), rgba(2, 15, 33, 0.62)),
+    var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22);
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 116px minmax(0, 1fr);
+  min-height: 122px;
+  overflow: hidden;
+  padding: 10px 18px 10px 12px;
+}
+
+.realm-teaser-message {
+  color: white;
+  font-size: 1.04rem;
+  font-weight: 600;
+  line-height: 1.24;
+  margin: 0;
+}
+
+.realm-teaser-image {
+  align-self: center;
+  filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.32));
+  height: 120px;
+  justify-self: center;
+  object-fit: contain;
+  transform: translateY(4px);
+  width: 112px;
 }
 
 .custom-builder-screen,
@@ -2009,6 +2223,7 @@ input:focus {
   }
 
   .phone-frame {
+    --bottom-nav-height: calc(78px + env(safe-area-inset-bottom));
     border: 0;
     border-radius: 0;
     height: 100dvh;
@@ -2101,7 +2316,41 @@ input:focus {
   }
 
   .forest-map {
-    height: 720px;
+    height: 780px;
+    min-height: 780px;
+  }
+
+  .realm-switcher {
+    gap: 6px;
+    grid-template-columns: 36px minmax(0, 1fr) 36px;
+    padding: 0 2px;
+  }
+
+  .realm-arrow {
+    height: 36px;
+    width: 36px;
+  }
+
+  .realm-track {
+    gap: 6px;
+  }
+
+  .realm-item {
+    gap: 6px;
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+
+  .realm-item img {
+    height: 36px;
+    width: 36px;
+  }
+
+  .realm-item strong {
+    font-size: 0.82rem;
+  }
+
+  .realm-item span {
+    font-size: 0.72rem;
   }
 }
 
@@ -2208,6 +2457,46 @@ input:focus {
   .custom-adventure-mascot {
     max-height: 128px;
     width: 120px;
+  }
+
+  .forest-map {
+    height: 780px;
+    min-height: 780px;
+  }
+
+  .realm-switcher {
+    min-height: 58px;
+  }
+
+  .realm-item {
+    grid-template-columns: 34px minmax(0, 1fr);
+    min-height: 56px;
+    padding: 0;
+  }
+
+  .realm-item img {
+    height: 34px;
+    width: 34px;
+  }
+
+  .realm-item strong {
+    font-size: 0.82rem;
+  }
+
+  .realm-teaser-card {
+    grid-template-columns: 90px minmax(0, 1fr);
+    min-height: 96px;
+    padding: 10px;
+  }
+
+  .realm-teaser-message {
+    font-size: 0.86rem;
+    line-height: 1.2;
+  }
+
+  .realm-teaser-image {
+    height: 98px;
+    width: 90px;
   }
 
   .custom-control-card,
@@ -2369,9 +2658,18 @@ input:focus {
 }
 
 @media (max-width: 480px) and (max-height: 700px) {
+  .phone-frame {
+    --bottom-nav-height: calc(66px + env(safe-area-inset-bottom));
+  }
+
   .screen {
     padding-bottom: calc(76px + env(safe-area-inset-bottom));
     padding-top: 8px;
+  }
+
+  .forest-map {
+    height: 760px;
+    min-height: 760px;
   }
 
   .mission-screen .mission-header {
@@ -2573,6 +2871,58 @@ input:focus {
 
   .custom-adventure-mascot {
     width: 114px;
+  }
+
+  .realm-switcher {
+    grid-template-columns: 32px minmax(0, 1fr) 32px;
+  }
+
+  .realm-arrow {
+    height: 32px;
+    width: 32px;
+  }
+
+  .realm-track {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .realm-item {
+    grid-template-columns: 30px minmax(0, 1fr);
+    min-height: 54px;
+    padding: 0;
+  }
+
+  .realm-item img {
+    height: 30px;
+    width: 30px;
+  }
+
+  .realm-item strong {
+    font-size: 0.72rem;
+  }
+
+  .realm-item span {
+    font-size: 0.66rem;
+  }
+
+  .forest-map {
+    height: 760px;
+    min-height: 760px;
+  }
+
+  .map-node {
+    font-size: 1.42rem;
+    height: 58px;
+    width: 58px;
+  }
+
+  .map-node.locked {
+    height: 48px;
+    width: 48px;
+  }
+
+  .map-node-wrap {
+    width: 68px;
   }
 
   .home-hero {

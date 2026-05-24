@@ -23,7 +23,7 @@ export default defineConfig({
       manifest: {
         name: 'Gibko',
         short_name: 'Gibko',
-        description: 'A playful stretching mission app for kids with Gibko the gibbon.',
+        description: 'A playful stretching adventure app for kids with Gibko the gibbon.',
         theme_color: '#020f21',
         background_color: '#020f21',
         display: 'standalone',
