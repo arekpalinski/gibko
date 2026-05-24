@@ -1395,6 +1395,15 @@ input:focus {
   box-shadow: 0 0 18px rgba(22, 214, 194, 0.32);
 }
 
+.exercise-progress-strip span.completed,
+.exercise-progress-strip span.visited {
+  background: rgba(22, 214, 194, 0.62);
+}
+
+.exercise-progress-strip span.active {
+  box-shadow: 0 0 0 2px rgba(22, 214, 194, 0.18), 0 0 18px rgba(22, 214, 194, 0.32);
+}
+
 .mission-title-block {
   min-width: 0;
 }
@@ -1873,6 +1882,43 @@ input:focus {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+}
+
+.exercise-step-nav {
+  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+}
+
+.exercise-step-nav .icon-action {
+  align-items: center;
+  background:
+    radial-gradient(circle at 32% 25%, rgba(255, 255, 255, 0.12), transparent 0 28%, transparent 58%),
+    rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  color: rgba(255, 255, 255, 0.88);
+  display: inline-flex;
+  height: 44px;
+  justify-content: center;
+  padding: 0;
+  width: 64px;
+}
+
+.exercise-step-nav .icon-action.previous {
+  border-color: rgba(255, 188, 54, 0.34);
+  color: var(--gold);
+  grid-column: 1;
+  justify-self: start;
+}
+
+.exercise-step-nav .icon-action.next {
+  border-color: rgba(22, 214, 194, 0.38);
+  color: var(--cyan);
+  grid-column: 2;
+  justify-self: end;
 }
 
 .exercise-actions .primary-action,

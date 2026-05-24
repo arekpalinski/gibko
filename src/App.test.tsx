@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { App, MAP_REALM_TEASERS, getExplorerTitleProgress } from './App'
@@ -7,6 +7,13 @@ import { badges } from './data/badges'
 import { chapters } from './data/chapters'
 import { customAdventureCategoryLabels, getAvailableCustomAdventureCategories } from './data/customAdventure'
 import { createInitialProgress, saveProgress } from './state/progress'
+
+function formatTestDuration(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+
+  return `${minutes}:${String(seconds).padStart(2, '0')}`
+}
 
 describe('mission flow', () => {
   beforeEach(() => {
@@ -183,6 +190,147 @@ describe('mission flow', () => {
     expect(screen.getByRole('heading', { name: secondMission.exercises[0].title.en })).toBeInTheDocument()
     expect(screen.getByText(`1 / ${secondMission.exercises.length}`)).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Adventure complete!' })).not.toBeInTheDocument()
+  })
+
+  it('keeps exercise time when children go back and resume completed exercises', async () => {
+    const firstMission = chapters[0].missions[0]
+    const [firstExercise, secondExercise] = firstMission.exercises
+    const progress = {
+      ...createInitialProgress('en'),
+      acceptedSafety: true,
+      childName: 'Alex',
+    }
+    saveProgress(progress)
+
+    render(
+      <MemoryRouter initialEntries={[`/chapter/${firstMission.chapterId}/adventure/${firstMission.slug}`]}>
+        <App />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText(firstMission.title.en)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: firstExercise.title.en })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Previous exercise' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Next exercise' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Done' })).toBeDisabled()
+
+    vi.useFakeTimers()
+
+    try {
+      fireEvent.click(screen.getByRole('button', { name: 'Start' }))
+      expect(screen.getByRole('button', { name: 'Start' })).toBeDisabled()
+      act(() => {
+        vi.advanceTimersByTime(5000)
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Done' }))
+
+      expect(screen.getByRole('heading', { name: secondExercise.title.en })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Previous exercise' })).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Next exercise' })).not.toBeInTheDocument()
+
+      fireEvent.click(screen.getByRole('button', { name: 'Start' }))
+      act(() => {
+        vi.advanceTimersByTime(3000)
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Previous exercise' }))
+
+      expect(screen.getByRole('heading', { name: firstExercise.title.en })).toBeInTheDocument()
+      expect(screen.getByText('0:05')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Resume' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Next exercise' })).toBeInTheDocument()
+
+      fireEvent.click(screen.getByRole('button', { name: 'Resume' }))
+      expect(screen.getByRole('button', { name: 'Resume' })).toBeDisabled()
+      act(() => {
+        vi.advanceTimersByTime(2000)
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Done' }))
+
+      expect(screen.getByRole('heading', { name: secondExercise.title.en })).toBeInTheDocument()
+      expect(screen.getByText('0:03')).toBeInTheDocument()
+      fireEvent.click(screen.getByRole('button', { name: 'Done' }))
+
+      const expectedSeconds = 10 + Math.max(0, firstMission.exercises.length - 2)
+
+      for (let index = 2; index < firstMission.exercises.length; index += 1) {
+        fireEvent.click(screen.getByRole('button', { name: 'Start' }))
+        act(() => {
+          vi.advanceTimersByTime(1000)
+        })
+        fireEvent.click(screen.getByRole('button', { name: 'Done' }))
+      }
+
+      expect(screen.getByRole('heading', { name: 'Adventure complete!' })).toBeInTheDocument()
+      expect(screen.getByText(formatTestDuration(expectedSeconds))).toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('keeps Done visible after Too hard instead of switching to Next', async () => {
+    const firstMission = chapters[0].missions[0]
+    const progress = {
+      ...createInitialProgress('en'),
+      acceptedSafety: true,
+      childName: 'Alex',
+    }
+    saveProgress(progress)
+
+    render(
+      <MemoryRouter initialEntries={[`/chapter/${firstMission.chapterId}/adventure/${firstMission.slug}`]}>
+        <App />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText(firstMission.title.en)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Start' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Done' })).toBeDisabled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Too hard' }))
+
+    expect(screen.getByText('Good call. Ask an adult for tips and come back when ready.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Start' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Done' })).toBeEnabled()
+    expect(screen.queryByRole('button', { name: 'Next' })).not.toBeInTheDocument()
+  })
+
+  it('only shows exercise navigation arrows for already reached exercises', async () => {
+    const firstMission = chapters[0].missions[0]
+    const [firstExercise, secondExercise, thirdExercise] = firstMission.exercises
+    const progress = {
+      ...createInitialProgress('en'),
+      acceptedSafety: true,
+      childName: 'Alex',
+    }
+    saveProgress(progress)
+
+    render(
+      <MemoryRouter initialEntries={[`/chapter/${firstMission.chapterId}/adventure/${firstMission.slug}`]}>
+        <App />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText(firstMission.title.en)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: firstExercise.title.en })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Previous exercise' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Next exercise' })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }))
+
+    expect(screen.getByRole('heading', { name: secondExercise.title.en })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Previous exercise' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Next exercise' })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }))
+
+    expect(screen.getByRole('heading', { name: thirdExercise.title.en })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Previous exercise' }))
+
+    expect(screen.getByRole('heading', { name: secondExercise.title.en })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Previous exercise' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Next exercise' })).toBeInTheDocument()
   })
 
   it('keeps legacy mission URLs working while using chapter adventure URLs', async () => {

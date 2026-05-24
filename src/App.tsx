@@ -59,6 +59,14 @@ type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>
 }
 
+type ExerciseSessionState = {
+  completed: boolean
+  seconds: number
+  started: boolean
+  usedDifficultyHelp: boolean
+  visited: boolean
+}
+
 const assetPath = (fileName: string) => `${import.meta.env.BASE_URL}assets/${fileName}`
 const GIBKO_LOGO_SRC = assetPath('gibko-logo-transparent.webp')
 const GIBKO_MASCOT_SRC = assetPath('gibko-mascot-stretch-transparent.webp')
@@ -786,14 +794,14 @@ function MissionScreen({
     ? `custom/${customDraft?.exerciseIds.join('-') ?? 'missing'}${location.search}`
     : `${missionId ?? `${chapterId ?? ''}/${adventureSlug ?? ''}`}${location.search}`
   const [exerciseIndex, setExerciseIndex] = useState(0)
-  const [startedExerciseIds, setStartedExerciseIds] = useState<string[]>([])
-  const [difficultyHelpExerciseIds, setDifficultyHelpExerciseIds] = useState<string[]>([])
+  const [exerciseStates, setExerciseStates] = useState<ExerciseSessionState[]>([])
   const [skipHint, setSkipHint] = useState(false)
   const [earnedBadgeIds, setEarnedBadgeIds] = useState<string[]>([])
   const [starsEarned, setStarsEarned] = useState(1)
   const [xpEarned, setXpEarned] = useState(0)
   const [completionImageIndex, setCompletionImageIndex] = useState(0)
   const [nextAdventureId, setNextAdventureId] = useState<string | null>(null)
+  const [activeExerciseIndex, setActiveExerciseIndex] = useState<number | null>(null)
   const [activeExerciseStartedAt, setActiveExerciseStartedAt] = useState<number | null>(null)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [missionSeconds, setMissionSeconds] = useState(0)
@@ -801,14 +809,14 @@ function MissionScreen({
 
   useEffect(() => {
     setExerciseIndex(initialExerciseIndex)
-    setStartedExerciseIds([])
-    setDifficultyHelpExerciseIds([])
+    setExerciseStates(createExerciseSessionStates(mission?.exercises.length ?? 0, initialExerciseIndex))
     setSkipHint(false)
     setEarnedBadgeIds([])
     setStarsEarned(1)
     setXpEarned(0)
     setCompletionImageIndex(0)
     setNextAdventureId(null)
+    setActiveExerciseIndex(null)
     setActiveExerciseStartedAt(null)
     setElapsedSeconds(0)
     setMissionSeconds(0)
@@ -816,7 +824,7 @@ function MissionScreen({
   }, [initialExerciseIndex, routeKey])
 
   useEffect(() => {
-    if (!activeExerciseStartedAt) {
+    if (activeExerciseStartedAt === null) {
       return
     }
 
@@ -858,30 +866,68 @@ function MissionScreen({
 
   const exercise = mission.exercises[exerciseIndex]
   const isLastExercise = exerciseIndex === mission.exercises.length - 1
-  const started = activeExerciseStartedAt !== null || startedExerciseIds.includes(exercise.id)
-  const usedDifficultyHelp = difficultyHelpExerciseIds.includes(exercise.id)
+  const currentExerciseState = exerciseStates[exerciseIndex] ?? createExerciseSessionState(true)
+  const isCurrentExerciseRunning = activeExerciseIndex === exerciseIndex && activeExerciseStartedAt !== null
+  const currentExerciseSeconds = currentExerciseState.seconds + (isCurrentExerciseRunning ? elapsedSeconds : 0)
+  const started = currentExerciseState.started || isCurrentExerciseRunning
+  const canGoToPreviousExercise = exerciseIndex > 0 && exerciseStates[exerciseIndex - 1]?.completed
+  const canGoToNextExercise =
+    exerciseIndex < mission.exercises.length - 1 && Boolean(exerciseStates[exerciseIndex + 1]?.visited)
   const exerciseMascotSrc = EXERCISE_MASCOT_IMAGES[exerciseMascotIndex]
 
+  const stopActiveTimer = () => {
+    setActiveExerciseIndex(null)
+    setActiveExerciseStartedAt(null)
+    setElapsedSeconds(0)
+  }
+
+  const pauseActiveExercise = () => {
+    const pausedStates = pauseExerciseTimer(exerciseStates, activeExerciseIndex, activeExerciseStartedAt)
+    setExerciseStates(pausedStates)
+    stopActiveTimer()
+
+    return pausedStates
+  }
+
+  const goToExercise = (nextExerciseIndex: number) => {
+    pauseActiveExercise()
+    setSkipHint(false)
+    setExerciseIndex(nextExerciseIndex)
+  }
+
   const startExercise = () => {
-    if (activeExerciseStartedAt) {
+    if (activeExerciseStartedAt !== null) {
       return
     }
 
     setSkipHint(false)
     setElapsedSeconds(0)
+    setActiveExerciseIndex(exerciseIndex)
     setActiveExerciseStartedAt(Date.now())
-    setStartedExerciseIds([...new Set([...startedExerciseIds, exercise.id])])
+    setExerciseStates((states) =>
+      ensureExerciseSessionStates(states, mission.exercises.length, initialExerciseIndex).map((state, index) =>
+        index === exerciseIndex ? { ...state, started: true, visited: true } : state,
+      ),
+    )
   }
 
   const finishExercise = () => {
     setSkipHint(false)
-    const exerciseSeconds = activeExerciseStartedAt
-      ? Math.max(1, Math.round((Date.now() - activeExerciseStartedAt) / 1000))
-      : 0
-    const nextMissionSeconds = missionSeconds + exerciseSeconds
-    setActiveExerciseStartedAt(null)
-    setElapsedSeconds(0)
-    setMissionSeconds(nextMissionSeconds)
+    const pausedStates = pauseExerciseTimer(exerciseStates, activeExerciseIndex, activeExerciseStartedAt)
+    const nextStates = pausedStates.map((state, index) => {
+      if (index === exerciseIndex) {
+        return { ...state, completed: true, started: true, visited: true }
+      }
+
+      if (!isLastExercise && index === exerciseIndex + 1) {
+        return { ...state, visited: true }
+      }
+
+      return state
+    })
+    const nextMissionSeconds = sumExerciseSessionSeconds(nextStates)
+    stopActiveTimer()
+    setExerciseStates(nextStates)
 
     if (!isLastExercise) {
       setExerciseIndex(exerciseIndex + 1)
@@ -893,8 +939,9 @@ function MissionScreen({
       mission,
       nextMissionSeconds,
       new Date(),
-      difficultyHelpExerciseIds.length > 0,
+      nextStates.some((state) => state.usedDifficultyHelp),
     )
+    setMissionSeconds(nextMissionSeconds)
     setCompletionImageIndex(getNextCompletionImageIndex())
     setProgress(result.progress)
     setEarnedBadgeIds(result.earnedBadgeIds)
@@ -906,10 +953,13 @@ function MissionScreen({
 
   const markTooHard = () => {
     setSkipHint(true)
-    setDifficultyHelpExerciseIds([...new Set([...difficultyHelpExerciseIds, exercise.id])])
-    if (!started) {
-      setStartedExerciseIds([...startedExerciseIds, exercise.id])
-    }
+    setExerciseStates((states) =>
+      ensureExerciseSessionStates(states, mission.exercises.length, initialExerciseIndex).map((state, index) =>
+        index === exerciseIndex
+          ? { ...state, started: true, usedDifficultyHelp: true, visited: true }
+          : state,
+      ),
+    )
   }
 
   if (missionDone) {
@@ -930,6 +980,7 @@ function MissionScreen({
     <Screen className="mission-screen">
       <header className="mission-header">
         <button
+          aria-label={translate('exercise.exit')}
           className="round-button"
           onClick={() => navigate(customAdventure ? '/custom-adventure/preview' : '/map')}
           type="button"
@@ -941,12 +992,18 @@ function MissionScreen({
             {exerciseIndex + 1} / {mission.exercises.length}
           </strong>
           <div className="exercise-progress-strip" aria-hidden="true">
-            {mission.exercises.map((missionExercise, index) => (
-              <span
-                className={index <= exerciseIndex ? 'active' : ''}
-                key={`${missionExercise.id}-${index}`}
-              />
-            ))}
+            {mission.exercises.map((missionExercise, index) => {
+              const state = exerciseStates[index]
+              const className = [
+                index === exerciseIndex ? 'active' : '',
+                state?.completed ? 'completed' : '',
+                state?.visited ? 'visited' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')
+
+              return <span className={className} key={`${missionExercise.id}-${index}`} />
+            })}
           </div>
         </div>
       </header>
@@ -1013,21 +1070,21 @@ function MissionScreen({
               />
             ))}
           </div>
-          <strong>{formatDuration(elapsedSeconds)}</strong>
+          <strong>{formatDuration(currentExerciseSeconds)}</strong>
         </div>
 
         <div className="exercise-actions">
           <button
             className="secondary-action"
-            disabled={activeExerciseStartedAt !== null}
+            disabled={isCurrentExerciseRunning}
             onClick={startExercise}
             type="button"
           >
             <Play size={18} />
-            {translate('exercise.start')}
+            {currentExerciseState.seconds > 0 ? translate('exercise.resume') : translate('exercise.start')}
           </button>
           <button className="primary-action" disabled={!started} onClick={finishExercise} type="button">
-            {usedDifficultyHelp ? translate('exercise.next') : translate('exercise.done')}
+            {translate('exercise.done')}
             <Check size={20} />
           </button>
         </div>
@@ -1036,6 +1093,31 @@ function MissionScreen({
           {translate('exercise.skip')}
         </button>
         {skipHint && <p className="hint">{translate('exercise.skipHint')}</p>}
+
+        {(canGoToPreviousExercise || canGoToNextExercise) && (
+          <div className="exercise-step-nav">
+            {canGoToPreviousExercise && (
+              <button
+                aria-label={translate('exercise.previous')}
+                className="icon-action previous"
+                onClick={() => goToExercise(exerciseIndex - 1)}
+                type="button"
+              >
+                <ChevronLeft size={22} />
+              </button>
+            )}
+            {canGoToNextExercise && (
+              <button
+                aria-label={translate('exercise.forward')}
+                className="icon-action next"
+                onClick={() => goToExercise(exerciseIndex + 1)}
+                type="button"
+              >
+                <ChevronRight size={22} />
+              </button>
+            )}
+          </div>
+        )}
       </section>
     </Screen>
   )
@@ -1140,6 +1222,54 @@ function getInitialExerciseIndex(search: string, mission?: Mission) {
   }
 
   return Math.min(exerciseNumber - 1, mission.exercises.length - 1)
+}
+
+function createExerciseSessionState(visited = false): ExerciseSessionState {
+  return {
+    completed: false,
+    seconds: 0,
+    started: false,
+    usedDifficultyHelp: false,
+    visited,
+  }
+}
+
+function createExerciseSessionStates(exerciseCount: number, initialExerciseIndex = 0) {
+  return Array.from({ length: exerciseCount }, (_, index) =>
+    createExerciseSessionState(index === initialExerciseIndex),
+  )
+}
+
+function ensureExerciseSessionStates(
+  states: ExerciseSessionState[],
+  exerciseCount: number,
+  initialExerciseIndex = 0,
+) {
+  return states.length === exerciseCount
+    ? states
+    : createExerciseSessionStates(exerciseCount, initialExerciseIndex)
+}
+
+function pauseExerciseTimer(
+  states: ExerciseSessionState[],
+  activeExerciseIndex: number | null,
+  activeExerciseStartedAt: number | null,
+) {
+  if (activeExerciseIndex === null || activeExerciseStartedAt === null || !states[activeExerciseIndex]) {
+    return states
+  }
+
+  const exerciseSeconds = Math.max(1, Math.round((Date.now() - activeExerciseStartedAt) / 1000))
+
+  return states.map((state, index) =>
+    index === activeExerciseIndex
+      ? { ...state, seconds: state.seconds + exerciseSeconds, started: true, visited: true }
+      : state,
+  )
+}
+
+function sumExerciseSessionSeconds(states: ExerciseSessionState[]) {
+  return states.reduce((total, state) => total + state.seconds, 0)
 }
 
 function parsePositiveInteger(value: string | null | undefined) {
