@@ -45,9 +45,11 @@ import {
 } from './data/customAdventure'
 import { t } from './i18n/messages'
 import {
+  ACTIVITY_WINDOW_DAYS,
   clearProgress,
   completeMission,
   createInitialProgress,
+  getActivitySummary,
   getCanonicalMissionId,
   isMissionCompleted,
   isMissionUnlocked,
@@ -84,9 +86,25 @@ const MISSION_COMPLETED_IMAGES = [
   assetPath('gibko-mission-completed-1.webp'),
   assetPath('gibko-mission-completed-2.webp'),
 ]
-const EXERCISE_MASCOT_IMAGES = [1, 2, 3, 4].map((index) =>
+const EXERCISE_MASCOT_IMAGES = [1, 2, 3, 4, 5, 6, 7].map((index) =>
   assetPath(`gibko-exercise-${index}.webp`),
 )
+const ACTIVITY_TREE_ASSETS = {
+  sprout: assetPath('activity-sprout.webp'),
+  leaf: assetPath('activity-leaf.webp'),
+  branch: assetPath('activity-branch.webp'),
+  'young-tree': assetPath('activity-young-tree.webp'),
+  'strong-tree': assetPath('activity-strong-tree.webp'),
+  'forest-guardian': assetPath('activity-forest-guardian.webp'),
+}
+const ACTIVITY_TREE_LABELS: Record<keyof typeof ACTIVITY_TREE_ASSETS, LocalizedText> = {
+  sprout: { pl: 'Kiełek', en: 'Sprout' },
+  leaf: { pl: 'Listek', en: 'Leaf' },
+  branch: { pl: 'Gałązka', en: 'Branch' },
+  'young-tree': { pl: 'Młode drzewko', en: 'Young Tree' },
+  'strong-tree': { pl: 'Silne drzewko', en: 'Strong Tree' },
+  'forest-guardian': { pl: 'Strażnik Lasu', en: 'Forest Guardian' },
+}
 const CHAPTER_MAP_ASSETS: Record<string, { board: string; thumb: string }> = {
   rainforest: {
     board: MAP_RAINFOREST_BOARD_SRC,
@@ -1456,6 +1474,8 @@ function ProfileScreen({
         </div>
       </section>
 
+      <ProfileActivityCard progress={progress} translate={translate} />
+
       <section>
         <div className="section-heading">
           <h3>{translate('stats.badges')}</h3>
@@ -1472,6 +1492,60 @@ function ProfileScreen({
         </div>
       </section>
     </Screen>
+  )
+}
+
+function ProfileActivityCard({
+  progress,
+  translate,
+}: {
+  progress: Progress
+  translate: (key: string, values?: Record<string, string | number>) => string
+}) {
+  const activity = getActivitySummary(progress)
+  const treeLabel = localize(progress.locale, ACTIVITY_TREE_LABELS[activity.stage])
+  const treeSrc = ACTIVITY_TREE_ASSETS[activity.stage]
+
+  return (
+    <section className="profile-activity-card" aria-label={translate('profile.activityTitle')}>
+      <div className="profile-activity-main">
+        <div className="profile-activity-heading">
+          <Leaf size={22} />
+          <h3>{translate('profile.activityTitle')}</h3>
+        </div>
+        <div className="activity-day-grid">
+          {activity.days.map((day) => (
+            <span
+              aria-label={translate(day.active ? 'profile.activeDay' : 'profile.inactiveDay', {
+                date: day.date,
+              })}
+              className={`activity-day ${day.active ? 'active' : ''}`}
+              key={day.date}
+              title={day.date}
+            >
+              {day.active && <Leaf size={20} strokeWidth={2.8} />}
+            </span>
+          ))}
+        </div>
+        <div className="activity-legend">
+          <span>
+            <i className="active" />
+            {translate('profile.activityLegendActive')}
+          </span>
+          <span>
+            <i />
+            {translate('profile.activityLegendInactive')}
+          </span>
+        </div>
+      </div>
+      <div className="activity-tree-summary">
+        <strong>{translate('profile.activityCount', { active: activity.activeDays, total: ACTIVITY_WINDOW_DAYS })}</strong>
+        <span>{translate('profile.activityCountLabel')}</span>
+        <img src={treeSrc} alt={translate('profile.activityTreeAlt', { stage: treeLabel })} />
+        <b>{treeLabel}</b>
+        <p>{translate('profile.activityEncouragement')}</p>
+      </div>
+    </section>
   )
 }
 

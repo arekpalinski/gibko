@@ -81,6 +81,7 @@ export type Badge = {
 export type Progress = {
   childName: string
   locale: Locale
+  activeDates: string[]
   xp: number
   streakDays: number
   consecutiveActiveDays: number

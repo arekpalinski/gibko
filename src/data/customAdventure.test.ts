@@ -83,6 +83,7 @@ describe('custom adventure builder', () => {
     expect(result.progress.xp).toBe(mission.xp)
     expect(result.progress.exerciseSecondsToday).toBe(fullRewardSeconds)
     expect(result.progress.totalExerciseSeconds).toBe(fullRewardSeconds)
+    expect(result.progress.activeDates).toEqual(['2026-05-18'])
     expect(result.progress.completedMissionIds).toContain(mission.id)
     expect(result.progress.missionStars[mission.id]).toBe(3)
   })

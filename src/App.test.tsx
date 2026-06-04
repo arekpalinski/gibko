@@ -15,6 +15,18 @@ function formatTestDuration(totalSeconds: number) {
   return `${minutes}:${String(seconds).padStart(2, '0')}`
 }
 
+function formatDateKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
+function recentDateKey(daysAgo: number) {
+  const date = new Date()
+  date.setHours(12, 0, 0, 0)
+  date.setDate(date.getDate() - daysAgo)
+
+  return formatDateKey(date)
+}
+
 describe('mission flow', () => {
   beforeEach(() => {
     localStorage.clear()
@@ -468,6 +480,29 @@ describe('mission flow', () => {
 describe('profile badges', () => {
   beforeEach(() => {
     localStorage.clear()
+  })
+
+  it('shows the thirty-day activity section without changing the badge preview link', async () => {
+    const progress = {
+      ...createInitialProgress('en'),
+      acceptedSafety: true,
+      activeDates: Array.from({ length: 24 }, (_, index) => recentDateKey(index)),
+      badgeIds: ['morning-leaf'],
+      childName: 'Alex',
+    }
+    saveProgress(progress)
+
+    render(
+      <MemoryRouter initialEntries={['/profile']}>
+        <App />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText('Activity in the last 30 days')).toBeInTheDocument()
+    expect(screen.getByText('24/30')).toBeInTheDocument()
+    expect(screen.getByText('active days')).toBeInTheDocument()
+    expect(screen.getByText('Strong Tree')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /See all/ })).toHaveAttribute('href', '/badges')
   })
 
   it('links from the profile badge preview to all badges', async () => {

@@ -4,11 +4,39 @@ import type { Locale, Mission, MissionResult, Progress } from '../types'
 const STORAGE_KEY = 'gibko-progress-v1'
 
 export const firstMissionId = chapters[0]?.missions[0]?.id ?? ''
+export const ACTIVITY_WINDOW_DAYS = 30
+
+export type ActivityDay = {
+  active: boolean
+  date: string
+}
+
+export type ActivityGrowthStageId =
+  | 'sprout'
+  | 'leaf'
+  | 'branch'
+  | 'young-tree'
+  | 'strong-tree'
+  | 'forest-guardian'
+
+const ACTIVITY_GROWTH_STAGES: Array<{
+  id: ActivityGrowthStageId
+  max: number
+  min: number
+}> = [
+  { id: 'sprout', min: 0, max: 5 },
+  { id: 'leaf', min: 6, max: 10 },
+  { id: 'branch', min: 11, max: 15 },
+  { id: 'young-tree', min: 16, max: 20 },
+  { id: 'strong-tree', min: 21, max: 25 },
+  { id: 'forest-guardian', min: 26, max: ACTIVITY_WINDOW_DAYS },
+]
 
 export function createInitialProgress(locale: Locale = 'pl'): Progress {
   return {
     childName: '',
     locale,
+    activeDates: [],
     xp: 0,
     streakDays: 0,
     consecutiveActiveDays: 0,
@@ -35,6 +63,10 @@ export function loadProgress(now = new Date()): Progress {
 
     if (!('consecutiveActiveDays' in parsed)) {
       progress.consecutiveActiveDays = parsed.lastActiveDate ? 1 : 0
+    }
+
+    if (!('activeDates' in parsed)) {
+      progress.activeDates = parsed.lastActiveDate ? [parsed.lastActiveDate] : []
     }
 
     return normalizeProgress(progress, now)
@@ -83,6 +115,7 @@ export function completeMission(
   const normalizedProgress = normalizeProgress(progress, now)
   const today = toDateKey(now)
   const yesterday = toDateKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1))
+  const activeDates = addActiveDate(normalizedProgress.activeDates, today)
   const alreadyCompleted = normalizedProgress.completedMissionIds.includes(mission.id)
   const activeDayCount = Math.max(0, normalizedProgress.streakDays)
   const previousConsecutiveActiveDays = normalizedProgress.lastActiveDate
@@ -109,7 +142,7 @@ export function completeMission(
 
   const unlockedMissionIds = unlockNextMission(normalizedProgress.unlockedMissionIds, mission.id)
   const earnedBadgeIds = getEarnedBadges(
-    { ...normalizedProgress, completedMissionIds, consecutiveActiveDays, exerciseSecondsToday, streakDays },
+    { ...normalizedProgress, activeDates, completedMissionIds, consecutiveActiveDays, exerciseSecondsToday, streakDays },
     mission,
     now,
   )
@@ -130,6 +163,7 @@ export function completeMission(
       xp: normalizedProgress.xp + xpEarned,
       streakDays,
       consecutiveActiveDays,
+      activeDates,
       lastActiveDate: today,
       exerciseSecondsToday,
       totalExerciseSeconds: normalizedProgress.totalExerciseSeconds + actualSeconds,
@@ -181,6 +215,42 @@ export function getMissionPlannedSeconds(mission: Mission) {
     mission.exercises.reduce((sum, exercise) => sum + exercise.estimatedMinutes * 60, 0) ||
     mission.estimatedMinutes * 60
   )
+}
+
+export function getLastActivityDays(activeDates: string[], now = new Date()): ActivityDay[] {
+  const activeDateSet = new Set(normalizeDateKeyList(activeDates))
+
+  return Array.from({ length: ACTIVITY_WINDOW_DAYS }, (_, index) => {
+    const daysAgo = ACTIVITY_WINDOW_DAYS - 1 - index
+    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysAgo)
+    const dateKey = toDateKey(date)
+
+    return {
+      active: activeDateSet.has(dateKey),
+      date: dateKey,
+    }
+  })
+}
+
+export function getActivitySummary(progress: Pick<Progress, 'activeDates'>, now = new Date()) {
+  const days = getLastActivityDays(progress.activeDates, now)
+  const activeDays = days.filter((day) => day.active).length
+
+  return {
+    activeDays,
+    days,
+    stage: getActivityGrowthStage(activeDays),
+  }
+}
+
+export function getActivityGrowthStage(activeDays: number): ActivityGrowthStageId {
+  const safeActiveDays = Math.min(ACTIVITY_WINDOW_DAYS, Math.max(0, Math.floor(activeDays)))
+
+  return (
+    ACTIVITY_GROWTH_STAGES.find(
+      (stage) => safeActiveDays >= stage.min && safeActiveDays <= stage.max,
+    ) ?? ACTIVITY_GROWTH_STAGES[0]
+  ).id
 }
 
 function getMissionFullRewardSeconds(mission: Mission) {
@@ -243,6 +313,7 @@ function normalizeProgress(progress: Progress, now = new Date()): Progress {
   const today = toDateKey(now)
   const normalized = normalizeProgressMissionIds({
     ...progress,
+    activeDates: normalizeDateKeyList(progress.activeDates),
     consecutiveActiveDays: progress.consecutiveActiveDays ?? (progress.lastActiveDate ? 1 : 0),
     exerciseSecondsToday: progress.lastActiveDate === today ? progress.exerciseSecondsToday : 0,
     missionStars: progress.missionStars ?? {},
@@ -278,6 +349,24 @@ function normalizeProgressMissionIds(progress: Progress): Progress {
 
 function normalizeMissionIdList(missionIds: string[]) {
   return Array.from(new Set(missionIds.map(getCanonicalMissionId)))
+}
+
+function addActiveDate(activeDates: string[], dateKey: string) {
+  return normalizeDateKeyList([...activeDates, dateKey])
+}
+
+function normalizeDateKeyList(dateKeys: unknown) {
+  if (!Array.isArray(dateKeys)) {
+    return []
+  }
+
+  return Array.from(
+    new Set(
+      dateKeys.filter((dateKey): dateKey is string =>
+        typeof dateKey === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateKey),
+      ),
+    ),
+  ).sort()
 }
 
 function normalizeUnlockedMissions(progress: Progress) {

@@ -6,6 +6,8 @@ import {
   clearProgress,
   completeMission,
   createInitialProgress,
+  getActivityGrowthStage,
+  getActivitySummary,
   getCanonicalMissionId,
   getMissionPlannedSeconds,
   loadProgress,
@@ -96,6 +98,68 @@ describe('progress logic', () => {
     expect(dayTwo.progress.consecutiveActiveDays).toBe(1)
     expect(dayTwo.progress.exerciseSecondsToday).toBe(45)
     expect(dayTwo.progress.totalExerciseSeconds).toBe(75)
+  })
+
+  it('records the active date when an adventure is completed', () => {
+    const mission = chapters[0].missions[0]
+    const result = completeMission(
+      createInitialProgress(),
+      mission,
+      120,
+      new Date('2026-05-12T12:00:00'),
+    )
+
+    expect(result.progress.activeDates).toEqual(['2026-05-12'])
+  })
+
+  it('does not duplicate active dates when multiple adventures are completed on the same day', () => {
+    const firstMission = chapters[0].missions[0]
+    const secondMission = chapters[0].missions[1]
+    const firstResult = completeMission(
+      createInitialProgress(),
+      firstMission,
+      120,
+      new Date('2026-05-12T12:00:00'),
+    )
+    const secondResult = completeMission(
+      firstResult.progress,
+      secondMission,
+      180,
+      new Date('2026-05-12T13:00:00'),
+    )
+
+    expect(secondResult.progress.activeDates).toEqual(['2026-05-12'])
+  })
+
+  it('summarizes only the last thirty local calendar days', () => {
+    const progress = {
+      ...createInitialProgress(),
+      activeDates: ['2026-05-05', '2026-05-06', '2026-06-02', '2026-06-04'],
+    }
+    const summary = getActivitySummary(progress, new Date('2026-06-04T12:00:00'))
+
+    expect(summary.days).toHaveLength(30)
+    expect(summary.days[0].date).toBe('2026-05-06')
+    expect(summary.days.at(-1)).toMatchObject({ active: true, date: '2026-06-04' })
+    expect(summary.activeDays).toBe(3)
+    expect(summary.stage).toBe('sprout')
+  })
+
+  it.each([
+    [0, 'sprout'],
+    [5, 'sprout'],
+    [6, 'leaf'],
+    [10, 'leaf'],
+    [11, 'branch'],
+    [15, 'branch'],
+    [16, 'young-tree'],
+    [20, 'young-tree'],
+    [21, 'strong-tree'],
+    [25, 'strong-tree'],
+    [26, 'forest-guardian'],
+    [30, 'forest-guardian'],
+  ] as const)('maps %i active days to the %s activity tree stage', (activeDays, stage) => {
+    expect(getActivityGrowthStage(activeDays)).toBe(stage)
   })
 
   it('adds exercise time across multiple missions on the same day', () => {

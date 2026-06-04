@@ -573,6 +573,7 @@ input:focus {
 
 .mission-card,
 .profile-stats-card,
+.profile-activity-card,
 .exercise-card,
 .badge-pill {
   background: var(--panel);
@@ -2097,6 +2098,133 @@ input:focus {
   font-size: 1.55rem;
 }
 
+.profile-activity-card {
+  align-items: stretch;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) 118px;
+  padding: 16px;
+}
+
+.profile-activity-main {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.profile-activity-heading {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.profile-activity-heading svg {
+  color: var(--green);
+  filter: drop-shadow(0 0 10px rgba(101, 213, 91, 0.35));
+}
+
+.profile-activity-heading h3 {
+  font-size: 1rem;
+  line-height: 1.12;
+}
+
+.activity-day-grid {
+  display: grid;
+  gap: 7px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.activity-day {
+  align-items: center;
+  aspect-ratio: 1;
+  background: rgba(255, 255, 255, 0.075);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.22);
+  display: grid;
+  place-items: center;
+}
+
+.activity-day.active {
+  background:
+    radial-gradient(circle, rgba(191, 255, 92, 0.42), rgba(101, 213, 91, 0.08) 72%),
+    rgba(22, 214, 194, 0.12);
+  border-color: rgba(101, 213, 91, 0.52);
+  color: #a9f75d;
+  box-shadow: 0 0 18px rgba(101, 213, 91, 0.2);
+}
+
+.activity-day svg {
+  filter: drop-shadow(0 0 8px rgba(169, 247, 93, 0.5));
+}
+
+.activity-legend {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.72rem;
+  gap: 10px 14px;
+}
+
+.activity-legend span {
+  align-items: center;
+  display: inline-flex;
+  gap: 6px;
+}
+
+.activity-legend i {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  height: 10px;
+  width: 10px;
+}
+
+.activity-legend i.active {
+  background: var(--green);
+}
+
+.activity-tree-summary {
+  align-content: center;
+  border-left: 1px solid var(--line);
+  display: grid;
+  justify-items: center;
+  padding-left: 14px;
+  text-align: center;
+}
+
+.activity-tree-summary strong {
+  color: var(--green);
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.activity-tree-summary span {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.8rem;
+  font-weight: 850;
+  margin-top: 3px;
+}
+
+.activity-tree-summary img {
+  height: 104px;
+  margin: 8px 0 4px;
+  object-fit: contain;
+  width: 104px;
+}
+
+.activity-tree-summary b {
+  color: var(--green);
+  font-size: 0.95rem;
+}
+
+.activity-tree-summary p {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.25;
+  margin-top: 4px;
+}
+
 .section-heading {
   align-items: center;
   display: flex;
@@ -2594,6 +2722,19 @@ input:focus {
     width: 118px;
   }
 
+  .profile-activity-card {
+    padding: 14px;
+  }
+
+  .activity-day-grid {
+    gap: 5px;
+  }
+
+  .activity-tree-summary img {
+    height: 88px;
+    width: 88px;
+  }
+
   .exercise-mission-chip {
     font-size: 0.78rem;
   }
@@ -3009,5 +3150,16 @@ input:focus {
 
   .exercise-details {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-activity-card {
+    grid-template-columns: 1fr;
+  }
+
+  .activity-tree-summary {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding-left: 0;
+    padding-top: 12px;
   }
 }
