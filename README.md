@@ -50,6 +50,12 @@ npm test
 npm run build
 ```
 
+## License
+
+The source code is licensed under the [Apache License 2.0](LICENSE).
+
+The Gibko name, logo, mascot, artwork, illustrations, icons, generated images, and other visual assets are not licensed under Apache License 2.0. They are all rights reserved unless a separate file or written permission states otherwise. See [NOTICE](NOTICE) for details.
+
 ## Deployment
 
 The app is configured for GitHub Pages as a project site:
