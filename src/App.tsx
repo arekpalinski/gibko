@@ -77,6 +77,7 @@ const GIBKO_HELLO_SRC = assetPath('gibko-hello-transparent.webp')
 const GIBKO_PROFILE_AVATAR_SRC = assetPath('gibko-profile-avatar.webp')
 const GIBKO_CUSTOM_ADVENTURE_SRC = assetPath('gibko-custom-adventure.webp')
 const GIBKO_CUSTOM_PREVIEW_SRC = assetPath('gibko-custom-preview.webp')
+const PROFILE_BACKGROUND_SRC = assetPath('profile-background.webp')
 const MAP_RAINFOREST_BOARD_SRC = assetPath('map-rainforest-board.webp')
 const MAP_RAINFOREST_THUMB_SRC = assetPath('map-rainforest-thumb.webp')
 const MAP_MISTY_BOARD_SRC = assetPath('map-misty-board.webp')
@@ -1247,7 +1248,7 @@ function Summary({
   const imageSrc = MISSION_COMPLETED_IMAGES[completionImageIndex % MISSION_COMPLETED_IMAGES.length]
 
   return (
-    <Screen className="centered">
+    <Screen className="summary-screen centered">
       <img className="summary-mascot" src={imageSrc} alt="Gibko celebrating mission completion" />
       <h1>{translate('summary.title')}</h1>
       <p>{translate('summary.body')}</p>
@@ -1444,24 +1445,29 @@ function ProfileScreen({
 
   return (
     <Screen className="profile-screen">
-      <header className="profile-top-row" aria-label={translate('profile.title')}>
-        <Link className="ghost-icon" to="/settings">
+      <header
+        className="profile-hero"
+        aria-label={translate('profile.title')}
+        style={{ backgroundImage: `url(${PROFILE_BACKGROUND_SRC})` }}
+      >
+        <img className="profile-mascot" src={GIBKO_PROFILE_AVATAR_SRC} alt="Gibko profile avatar" />
+        <div className="profile-identity">
+          <h2 className="profile-name">{progress.childName}</h2>
+          <div className="explorer-title-label">{translate('profile.titleLabel')}</div>
+          <div className="level-pill">{localize(progress.locale, explorerTitle.title)}</div>
+          <p className="title-progress-hint">
+            {explorerTitle.nextTitle
+              ? translate('profile.nextTitleHint', {
+                  points: explorerTitle.pointsToNextTitle,
+                  title: localize(progress.locale, explorerTitle.nextTitle),
+                })
+              : translate('profile.maxTitleHint')}
+          </p>
+        </div>
+        <Link className="profile-settings-button" to="/settings">
           <Settings />
         </Link>
       </header>
-
-      <img className="profile-mascot" src={GIBKO_PROFILE_AVATAR_SRC} alt="Gibko profile avatar" />
-      <h2 className="profile-name">{progress.childName}</h2>
-      <div className="explorer-title-label">{translate('profile.titleLabel')}</div>
-      <div className="level-pill">{localize(progress.locale, explorerTitle.title)}</div>
-      <p className="title-progress-hint">
-        {explorerTitle.nextTitle
-          ? translate('profile.nextTitleHint', {
-              points: explorerTitle.pointsToNextTitle,
-              title: localize(progress.locale, explorerTitle.nextTitle),
-            })
-          : translate('profile.maxTitleHint')}
-      </p>
 
       <section className="profile-stats-card">
         <StatsRow compact progress={progress} translate={translate} />
@@ -1476,14 +1482,14 @@ function ProfileScreen({
 
       <ProfileActivityCard progress={progress} translate={translate} />
 
-      <section>
+      <section className="profile-badges-section">
         <div className="section-heading">
           <h3>{translate('stats.badges')}</h3>
           <Link className="text-link" to="/badges">
             {translate('profile.seeAll')} →
           </Link>
         </div>
-        <div className="badge-grid">
+        <div className="badge-grid profile-badge-grid">
           {earnedBadges.length ? (
             earnedBadges.map((badge) => <BadgePill badge={badge} key={badge.id} translate={translate} />)
           ) : (

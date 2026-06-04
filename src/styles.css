@@ -1980,9 +1980,30 @@ input:focus {
 }
 
 .summary-mascot {
-  height: clamp(220px, 58vw, 310px);
+  height: clamp(176px, 46vw, 236px);
   object-fit: contain;
-  width: clamp(220px, 58vw, 310px);
+  width: clamp(176px, 46vw, 236px);
+}
+
+.summary-screen {
+  align-content: start;
+  gap: 14px;
+  grid-auto-rows: max-content;
+  justify-items: center;
+  padding-top: 24px;
+}
+
+.summary-screen h1 {
+  font-size: clamp(1.72rem, 7vw, 2.15rem);
+  line-height: 1.08;
+}
+
+.summary-screen p {
+  max-width: 330px;
+}
+
+.summary-screen .badge-pill {
+  width: 100%;
 }
 
 .summary-xp {
@@ -2011,72 +2032,149 @@ input:focus {
 }
 
 .profile-screen {
-  gap: 10px;
-  padding-top: 18px;
+  gap: 12px;
+  padding-top: 14px;
 }
 
-.profile-top-row {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: -6px;
-  min-height: 42px;
+.profile-hero {
+  align-items: center;
+  background-position: center;
+  background-size: cover;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(126px, 36%) minmax(0, 1fr);
+  min-height: 208px;
+  overflow: hidden;
+  padding: 20px 52px 18px 16px;
+  position: relative;
+}
+
+.profile-hero::before {
+  background:
+    linear-gradient(90deg, rgba(2, 15, 33, 0.04), rgba(2, 15, 33, 0.1) 48%, rgba(2, 15, 33, 0.34)),
+    linear-gradient(180deg, rgba(2, 15, 33, 0.02), rgba(2, 15, 33, 0.18));
+  content: "";
+  inset: 0;
+  position: absolute;
 }
 
 .profile-mascot {
-  height: 138px;
-  justify-self: center;
-  margin-bottom: -4px;
+  align-self: end;
+  height: auto;
+  justify-self: start;
+  margin-bottom: -8px;
+  max-height: 176px;
+  max-width: 100%;
   object-fit: contain;
-  width: 138px;
+  position: relative;
+  width: 100%;
+  z-index: 1;
+}
+
+.profile-identity {
+  align-content: center;
+  display: grid;
+  gap: 7px;
+  justify-items: start;
+  min-width: 0;
+  padding-top: 6px;
+  position: relative;
+  z-index: 1;
 }
 
 .profile-name {
-  font-size: 1.72rem;
-  justify-self: center;
+  font-size: clamp(1.55rem, 5.7vw, 2.18rem);
+  justify-self: start;
   line-height: 1.08;
+  overflow-wrap: anywhere;
 }
 
 .level-pill {
   background: linear-gradient(135deg, var(--green), var(--cyan));
   border-radius: 999px;
+  font-size: 0.94rem;
   font-weight: 950;
-  justify-self: center;
-  padding: 7px 16px;
+  justify-self: start;
+  padding: 7px 15px;
 }
 
 .explorer-title-label {
   color: var(--green);
   font-size: 0.72rem;
   font-weight: 950;
-  justify-self: center;
-  margin-bottom: -8px;
+  justify-self: start;
+  margin-bottom: -2px;
   text-transform: uppercase;
 }
 
 .title-progress-hint {
   color: rgba(255, 255, 255, 0.82);
-  font-size: 0.86rem;
+  font-size: 0.82rem;
   line-height: 1.35;
-  justify-self: center;
-  max-width: 300px;
-  text-align: center;
+  justify-self: start;
+  max-width: 178px;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.profile-settings-button {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.9);
+  display: inline-flex;
+  height: 44px;
+  justify-content: center;
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  width: 44px;
+  z-index: 2;
+}
+
+.profile-settings-button svg {
+  height: 25px;
+  width: 25px;
 }
 
 .profile-stats-card {
-  padding: 8px 14px 12px;
+  padding: 10px 14px 12px;
+}
+
+.profile-stats-card .stats-row.compact {
+  display: grid;
+  gap: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .profile-stats-card .stats-row.compact .stat-card {
-  min-height: 78px;
+  align-items: center;
+  grid-template-columns: auto minmax(0, max-content);
+  justify-content: center;
+  min-height: 76px;
   padding: 8px 6px;
 }
 
+.profile-stats-card .stats-row.compact .stat-card:not(:first-child) {
+  border-left: 1px solid var(--line);
+}
+
 .profile-stats-card .stat-emoji {
-  min-height: 28px;
+  min-height: 0;
 }
 
 .profile-stats-card .stat-card strong {
+  grid-column: 1 / -1;
   font-size: 1.45rem;
+}
+
+.profile-stats-card .stat-card > span:not(.stat-emoji) {
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.1;
+  text-align: left;
 }
 
 .total-minutes {
@@ -2084,18 +2182,23 @@ input:focus {
   border-top: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
+  margin-top: 8px;
   padding-top: 12px;
+  text-align: left;
 }
 
 .total-minutes span {
   align-items: center;
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.82);
   display: inline-flex;
+  flex-direction: row;
+  font-size: 0.8rem;
+  font-weight: 850;
   gap: 8px;
 }
 
 .total-minutes strong {
-  font-size: 1.55rem;
+  font-size: 1.45rem;
 }
 
 .profile-activity-card {
@@ -2124,7 +2227,8 @@ input:focus {
 }
 
 .profile-activity-heading h3 {
-  font-size: 1rem;
+  font-size: 0.92rem;
+  font-weight: 800;
   line-height: 1.12;
 }
 
@@ -2250,6 +2354,14 @@ input:focus {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.profile-badges-section {
+  margin-top: 2px;
+}
+
+.profile-badge-grid {
+  grid-template-columns: 1fr;
+}
+
 .badge-pill {
   align-items: center;
   display: flex;
@@ -2267,6 +2379,23 @@ input:focus {
 .badge-pill p {
   font-size: 0.86rem;
   margin-top: 4px;
+}
+
+.profile-badge-grid .badge-pill {
+  border-radius: 18px;
+  min-height: 88px;
+  padding: 14px 16px;
+}
+
+.profile-badge-grid .badge-pill svg {
+  flex: 0 0 auto;
+  height: 24px;
+  width: 24px;
+}
+
+.profile-badge-grid .badge-pill p {
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.45;
 }
 
 .badge-icon {
@@ -2713,13 +2842,64 @@ input:focus {
   }
 
   .summary-mascot {
-    height: 190px;
-    width: 190px;
+    height: 164px;
+    width: 164px;
+  }
+
+  .summary-screen {
+    gap: 11px;
+    padding-top: 16px;
+  }
+
+  .profile-hero {
+    grid-template-columns: minmax(112px, 34%) minmax(0, 1fr);
+    min-height: 184px;
+    padding: 16px 46px 14px 12px;
   }
 
   .profile-mascot {
-    height: 118px;
-    width: 118px;
+    margin-bottom: -7px;
+    max-height: 148px;
+  }
+
+  .profile-name {
+    font-size: 1.48rem;
+  }
+
+  .title-progress-hint {
+    font-size: 0.76rem;
+    max-width: 154px;
+  }
+
+  .profile-settings-button {
+    height: 42px;
+    right: 10px;
+    top: 10px;
+    width: 42px;
+  }
+
+  .profile-stats-card {
+    padding: 9px 8px 11px;
+  }
+
+  .profile-stats-card .stats-row.compact .stat-card {
+    min-height: 70px;
+    padding: 6px 4px;
+  }
+
+  .profile-stats-card .stat-card strong,
+  .total-minutes strong {
+    font-size: 1.22rem;
+  }
+
+  .profile-stats-card .stat-card > span:not(.stat-emoji),
+  .total-minutes span {
+    font-size: 0.64rem;
+  }
+
+  .total-minutes {
+    margin-top: 6px;
+    padding-top: 10px;
   }
 
   .profile-activity-card {
@@ -3128,6 +3308,34 @@ input:focus {
 
   .hello-mascot {
     width: 118px;
+  }
+
+  .profile-hero {
+    grid-template-columns: 102px minmax(0, 1fr);
+    min-height: 174px;
+    padding-left: 10px;
+  }
+
+  .profile-mascot {
+    max-height: 134px;
+  }
+
+  .profile-name {
+    font-size: 1.34rem;
+  }
+
+  .level-pill {
+    font-size: 0.78rem;
+    padding: 6px 11px;
+  }
+
+  .explorer-title-label {
+    font-size: 0.62rem;
+  }
+
+  .title-progress-hint {
+    font-size: 0.7rem;
+    max-width: 136px;
   }
 
   .mission-title-block h1 {
