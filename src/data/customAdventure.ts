@@ -1,4 +1,4 @@
-import type { Exercise, ExerciseCategory, LocalizedText, Mission } from '../types'
+import type { Equipment, Exercise, ExerciseCategory, LocalizedText, Mission } from '../types'
 import {
   type ExerciseId,
   exerciseLibrary,
@@ -10,6 +10,7 @@ import {
 } from './exercises'
 
 const text = (pl: string, en: string): LocalizedText => ({ pl, en })
+type CustomAdventureEquipment = Exclude<Equipment, 'none'>
 
 export const CUSTOM_ADVENTURE_STORAGE_KEY = 'gibko-custom-adventure-v1'
 
@@ -18,6 +19,7 @@ export type CustomAdventureOptions = {
   minMinutes: number
   maxMinutes: number
   categories: ExerciseCategory[]
+  equipment: Equipment[]
 }
 
 export type CustomAdventureDraft = {
@@ -30,6 +32,7 @@ export const DEFAULT_CUSTOM_ADVENTURE_OPTIONS: CustomAdventureOptions = {
   minMinutes: 10,
   maxMinutes: 15,
   categories: [],
+  equipment: [],
 }
 
 export const customAdventureCategoryLabels: Record<ExerciseCategory, LocalizedText> = {
@@ -47,16 +50,42 @@ export const customAdventureCategoryLabels: Record<ExerciseCategory, LocalizedTe
   trunk: text('Brzuch i tułów', 'Trunk'),
 }
 
-export function getAvailableCustomAdventureCategories() {
-  const usedCategories = new Set<ExerciseCategory>()
+export const customAdventureEquipmentLabels: Record<CustomAdventureEquipment, LocalizedText> = {
+  softBall: text('Piłeczka', 'Soft ball'),
+  sensoryMat: text('Mata sensoryczna', 'Sensory mat'),
+  sensoryCushion: text('Poduszka / dysk sensoryczny', 'Sensory cushion / disc'),
+}
+
+export function getAvailableCustomAdventureEquipment() {
+  const usedEquipment = new Set<CustomAdventureEquipment>()
 
   Object.values(exerciseLibrary).forEach((exercise) => {
+    exercise.equipment.forEach((item) => {
+      if (isCustomAdventureEquipment(item)) {
+        usedEquipment.add(item)
+      }
+    })
+  })
+
+  return (Object.keys(customAdventureEquipmentLabels) as CustomAdventureEquipment[]).filter((equipment) =>
+    usedEquipment.has(equipment),
+  )
+}
+
+export function getAvailableCustomAdventureCategories(equipment: Equipment[] = []) {
+  const usedCategories = new Set<ExerciseCategory>()
+
+  getExercisesForEquipment(normalizeCustomAdventureEquipment(equipment)).forEach((exercise) => {
     exercise.categories.forEach((category) => usedCategories.add(category))
   })
 
   return (Object.keys(customAdventureCategoryLabels) as ExerciseCategory[]).filter((category) =>
     usedCategories.has(category),
   )
+}
+
+export function getCustomAdventureMatchCount(options: Partial<CustomAdventureOptions> = {}) {
+  return getMatchingExercises(normalizeCustomAdventureOptions(options)).length
 }
 
 export function normalizeCustomAdventureOptions(
@@ -66,19 +95,24 @@ export function normalizeCustomAdventureOptions(
   const maxMinutes = clampNumber(options.maxMinutes ?? DEFAULT_CUSTOM_ADVENTURE_OPTIONS.maxMinutes, 5, 25)
   const sortedMinMinutes = Math.min(minMinutes, maxMinutes)
   const sortedMaxMinutes = Math.max(minMinutes, maxMinutes)
+  const equipment = normalizeCustomAdventureEquipment(options.equipment)
+  const availableCategories = new Set(getAvailableCustomAdventureCategories(equipment))
   const categories = (options.categories ?? []).filter((category): category is ExerciseCategory =>
     category in customAdventureCategoryLabels,
-  )
+  ).filter((category) => availableCategories.has(category))
+  const matchingExerciseCount = getMatchingExercises({ categories, equipment }).length
+  const maxExerciseCount = Math.max(1, Math.min(5, matchingExerciseCount))
 
   return {
     exerciseCount: clampNumber(
       options.exerciseCount ?? DEFAULT_CUSTOM_ADVENTURE_OPTIONS.exerciseCount,
       1,
-      5,
+      maxExerciseCount,
     ),
     minMinutes: sortedMinMinutes,
     maxMinutes: sortedMaxMinutes,
     categories: Array.from(new Set(categories)),
+    equipment,
   }
 }
 
@@ -88,11 +122,7 @@ export function generateCustomAdventureDraft(
   random = Math.random,
 ): CustomAdventureDraft {
   const normalizedOptions = normalizeCustomAdventureOptions(options)
-  const matchingExercises = getMatchingExercises(normalizedOptions.categories)
-  const candidateExercises =
-    matchingExercises.length >= normalizedOptions.exerciseCount
-      ? matchingExercises
-      : Object.values(exerciseLibrary)
+  const candidateExercises = getMatchingExercises(normalizedOptions)
   let bestExercises: Exercise[] = []
   let bestScore = Number.POSITIVE_INFINITY
 
@@ -107,7 +137,7 @@ export function generateCustomAdventureDraft(
   }
 
   if (bestExercises.length === 0) {
-    bestExercises = Object.values(exerciseLibrary).slice(0, normalizedOptions.exerciseCount)
+    bestExercises = candidateExercises.slice(0, normalizedOptions.exerciseCount)
   }
 
   return {
@@ -171,15 +201,35 @@ export function loadCustomAdventureDraft(): CustomAdventureDraft | null {
   }
 }
 
-function getMatchingExercises(categories: ExerciseCategory[]) {
+function normalizeCustomAdventureEquipment(equipment: Equipment[] = []) {
+  const validEquipment = equipment.filter(isCustomAdventureEquipment)
+
+  return Array.from(new Set(validEquipment))
+}
+
+function isCustomAdventureEquipment(item: Equipment): item is CustomAdventureEquipment {
+  return item in customAdventureEquipmentLabels
+}
+
+function getExercisesForEquipment(equipment: Equipment[]) {
   const exercises = Object.values(exerciseLibrary)
 
-  if (categories.length === 0) {
+  if (equipment.length === 0) {
+    return exercises
+  }
+
+  return exercises.filter((exercise) => exercise.equipment.some((item) => equipment.includes(item)))
+}
+
+function getMatchingExercises(options: Pick<CustomAdventureOptions, 'categories' | 'equipment'>) {
+  const exercises = getExercisesForEquipment(options.equipment)
+
+  if (options.categories.length === 0) {
     return exercises
   }
 
   return exercises.filter((exercise) =>
-    exercise.categories.some((category) => categories.includes(category)),
+    exercise.categories.some((category) => options.categories.includes(category)),
   )
 }
 

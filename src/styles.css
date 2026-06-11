@@ -1216,10 +1216,23 @@ input:focus {
   justify-content: center;
 }
 
+.count-stepper button:disabled {
+  color: rgba(255, 255, 255, 0.22);
+  cursor: not-allowed;
+}
+
 .count-stepper strong {
   color: white;
   font-size: 2rem;
   font-weight: 950;
+  text-align: center;
+}
+
+.custom-availability-note {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.78rem;
+  font-weight: 850;
+  margin: 8px 0 0;
   text-align: center;
 }
 

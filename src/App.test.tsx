@@ -5,8 +5,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { App, MAP_REALM_TEASERS, getExplorerTitleProgress } from './App'
 import { badges } from './data/badges'
 import { chapters } from './data/chapters'
-import { customAdventureCategoryLabels, getAvailableCustomAdventureCategories } from './data/customAdventure'
+import {
+  CUSTOM_ADVENTURE_STORAGE_KEY,
+  customAdventureCategoryLabels,
+  customAdventureEquipmentLabels,
+  getAvailableCustomAdventureCategories,
+  getAvailableCustomAdventureEquipment,
+} from './data/customAdventure'
 import { createInitialProgress, saveProgress } from './state/progress'
+import { exerciseLibrary } from './data/exercises'
 
 function formatTestDuration(totalSeconds: number) {
   const minutes = Math.floor(totalSeconds / 60)
@@ -125,6 +132,13 @@ describe('mission flow', () => {
 
     expect(await screen.findByRole('heading', { name: 'My own adventure' })).toBeInTheDocument()
     expect(screen.getByText('Number of exercises')).toBeInTheDocument()
+    expect(screen.getByText('What are we using?')).toBeInTheDocument()
+    expect(screen.getByText('Any equipment')).toBeInTheDocument()
+    getAvailableCustomAdventureEquipment().forEach((equipment) => {
+      expect(
+        screen.getByRole('button', { name: customAdventureEquipmentLabels[equipment].en }),
+      ).toBeInTheDocument()
+    })
     expect(screen.getByText('Everything')).toBeInTheDocument()
     getAvailableCustomAdventureCategories().forEach((category) => {
       expect(
@@ -132,12 +146,31 @@ describe('mission flow', () => {
       ).toBeInTheDocument()
     })
 
+    fireEvent.click(screen.getByRole('button', { name: 'Soft ball' }))
+
+    expect(screen.getByRole('button', { name: 'Feet' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Neck' })).not.toBeInTheDocument()
+
     fireEvent.click(screen.getByRole('button', { name: 'Build adventure' }))
 
     expect(await screen.findByRole('heading', { name: 'Here is a set for you' })).toBeInTheDocument()
     expect(screen.getByText('Selected exercises')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Start' })).toHaveAttribute('href', '/custom-adventure/play')
     expect(screen.getByRole('button', { name: 'Build again' })).toBeInTheDocument()
+
+    const savedDraft = JSON.parse(localStorage.getItem(CUSTOM_ADVENTURE_STORAGE_KEY) ?? '{}') as {
+      exerciseIds?: string[]
+      options?: { equipment?: string[] }
+    }
+
+    expect(savedDraft.options?.equipment).toEqual(['softBall'])
+    expect(savedDraft.exerciseIds?.length).toBeGreaterThan(0)
+    savedDraft.exerciseIds?.forEach((exerciseId) => {
+      expect(exerciseId in exerciseLibrary).toBe(true)
+      const exercise = exerciseLibrary[exerciseId as keyof typeof exerciseLibrary]
+
+      expect(exercise.equipment).toContain('softBall')
+    })
   })
 
   it('links unlocked map nodes through the chapter adventure route', async () => {

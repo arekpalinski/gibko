@@ -37,8 +37,11 @@ import {
   DEFAULT_CUSTOM_ADVENTURE_OPTIONS,
   createCustomAdventureMission,
   customAdventureCategoryLabels,
+  customAdventureEquipmentLabels,
   generateCustomAdventureDraft,
   getAvailableCustomAdventureCategories,
+  getAvailableCustomAdventureEquipment,
+  getCustomAdventureMatchCount,
   loadCustomAdventureDraft,
   normalizeCustomAdventureOptions,
   saveCustomAdventureDraft,
@@ -56,7 +59,7 @@ import {
   loadProgress,
   saveProgress,
 } from './state/progress'
-import type { Badge, Exercise, ExerciseCategory, LocalizedText, Mission, Progress } from './types'
+import type { Badge, Equipment, Exercise, ExerciseCategory, LocalizedText, Mission, Progress } from './types'
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>
@@ -656,13 +659,24 @@ function CustomAdventureSetupScreen({
   translate: (key: string, values?: Record<string, string | number>) => string
 }) {
   const navigate = useNavigate()
-  const availableCategories = getAvailableCustomAdventureCategories()
   const [options, setOptions] = useState(() =>
     normalizeCustomAdventureOptions(loadCustomAdventureDraft()?.options ?? DEFAULT_CUSTOM_ADVENTURE_OPTIONS),
   )
+  const availableEquipment = getAvailableCustomAdventureEquipment()
+  const availableCategories = getAvailableCustomAdventureCategories(options.equipment)
+  const matchingExerciseCount = getCustomAdventureMatchCount(options)
+  const maxExerciseCount = Math.max(1, Math.min(5, matchingExerciseCount))
 
   const updateOptions = (nextOptions: Partial<typeof options>) => {
     setOptions((currentOptions) => normalizeCustomAdventureOptions({ ...currentOptions, ...nextOptions }))
+  }
+
+  const toggleEquipment = (equipment: Equipment) => {
+    updateOptions({
+      equipment: options.equipment.includes(equipment)
+        ? options.equipment.filter((selectedEquipment) => selectedEquipment !== equipment)
+        : [...options.equipment, equipment],
+    })
   }
 
   const toggleCategory = (category: ExerciseCategory) => {
@@ -698,6 +712,7 @@ function CustomAdventureSetupScreen({
           <div className="count-stepper">
             <button
               aria-label={translate('custom.decreaseExercises')}
+              disabled={options.exerciseCount <= 1}
               onClick={() => updateOptions({ exerciseCount: options.exerciseCount - 1 })}
               type="button"
             >
@@ -706,12 +721,16 @@ function CustomAdventureSetupScreen({
             <strong>{options.exerciseCount}</strong>
             <button
               aria-label={translate('custom.increaseExercises')}
+              disabled={options.exerciseCount >= maxExerciseCount}
               onClick={() => updateOptions({ exerciseCount: options.exerciseCount + 1 })}
               type="button"
             >
               <Plus size={18} />
             </button>
           </div>
+          <p className="custom-availability-note">
+            {translate('custom.availableExercises', { count: matchingExerciseCount })}
+          </p>
         </div>
 
         <div className="custom-control-card">
@@ -744,6 +763,38 @@ function CustomAdventureSetupScreen({
                 value={options.maxMinutes}
               />
             </label>
+          </div>
+        </div>
+
+        <div className="custom-control-card">
+          <div className="custom-control-heading">
+            <Sparkles size={20} />
+            <span>{translate('custom.equipment')}</span>
+          </div>
+          <div className="category-chip-grid">
+            <button
+              aria-pressed={options.equipment.length === 0}
+              className={options.equipment.length === 0 ? 'category-chip selected' : 'category-chip'}
+              onClick={() => updateOptions({ equipment: [] })}
+              type="button"
+            >
+              {translate('custom.allEquipment')}
+            </button>
+            {availableEquipment.map((equipment) => {
+              const selected = options.equipment.includes(equipment)
+
+              return (
+                <button
+                  aria-pressed={selected}
+                  className={selected ? 'category-chip selected' : 'category-chip'}
+                  key={equipment}
+                  onClick={() => toggleEquipment(equipment)}
+                  type="button"
+                >
+                  {localize(progress.locale, customAdventureEquipmentLabels[equipment])}
+                </button>
+              )
+            })}
           </div>
         </div>
 

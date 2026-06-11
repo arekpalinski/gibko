@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest'
 import {
   createCustomAdventureMission,
   customAdventureCategoryLabels,
+  customAdventureEquipmentLabels,
   generateCustomAdventureDraft,
   getAvailableCustomAdventureCategories,
+  getAvailableCustomAdventureEquipment,
+  normalizeCustomAdventureOptions,
 } from './customAdventure'
 import { exerciseLibrary } from './exercises'
 import { calculateMissionXp, completeMission, createInitialProgress, getMissionPlannedSeconds } from '../state/progress'
@@ -29,6 +32,39 @@ describe('custom adventure builder', () => {
       expect(customAdventureCategoryLabels[category].pl).toBeTruthy()
       expect(customAdventureCategoryLabels[category].en).toBeTruthy()
     })
+  })
+
+  it('keeps available equipment in sync with the exercise library', () => {
+    const usedEquipment = Array.from(
+      new Set(
+        Object.values(exerciseLibrary)
+          .flatMap((exercise) => exercise.equipment)
+          .filter((equipment) => equipment !== 'none'),
+      ),
+    ).sort()
+    const availableEquipment = [...getAvailableCustomAdventureEquipment()].sort()
+
+    expect(availableEquipment).toEqual(usedEquipment)
+    expect(availableEquipment).not.toContain('none')
+    availableEquipment.forEach((equipment) => {
+      expect(customAdventureEquipmentLabels[equipment].pl).toBeTruthy()
+      expect(customAdventureEquipmentLabels[equipment].en).toBeTruthy()
+    })
+  })
+
+  it('narrows available categories after equipment is selected', () => {
+    const softBallCategories = [...getAvailableCustomAdventureCategories(['softBall'])].sort()
+    const expectedCategories = Array.from(
+      new Set(
+        Object.values(exerciseLibrary)
+          .filter((exercise) => exercise.equipment.some((equipment) => equipment === 'softBall'))
+          .flatMap((exercise) => exercise.categories),
+      ),
+    ).sort()
+
+    expect(softBallCategories).toEqual(expectedCategories)
+    expect(softBallCategories).toContain('feet')
+    expect(softBallCategories).not.toContain('neck')
   })
 
   it('generates a reusable custom adventure from selected exercise categories', () => {
@@ -60,6 +96,75 @@ describe('custom adventure builder', () => {
     draft.exerciseIds.forEach((exerciseId) => {
       expect(exerciseLibrary[exerciseId]).toBeTruthy()
     })
+  })
+
+  it('generates custom adventures only from selected equipment', () => {
+    const draft = generateCustomAdventureDraft(
+      {
+        equipment: ['softBall'],
+        exerciseCount: 5,
+        minMinutes: 5,
+        maxMinutes: 25,
+      },
+      [],
+      seededRandom(41),
+    )
+    const mission = createCustomAdventureMission(draft.exerciseIds)
+
+    expect(mission.exercises).toHaveLength(5)
+    expect(mission.exercises.every((exercise) => exercise.equipment.includes('softBall'))).toBe(true)
+    expect(mission.exercises.every((exercise) => exercise.equipment.includes('none'))).toBe(false)
+  })
+
+  it('combines equipment and categories as strict filters', () => {
+    const draft = generateCustomAdventureDraft(
+      {
+        equipment: ['softBall'],
+        categories: ['feet'],
+        exerciseCount: 5,
+        minMinutes: 5,
+        maxMinutes: 25,
+      },
+      [],
+      seededRandom(73),
+    )
+    const mission = createCustomAdventureMission(draft.exerciseIds)
+
+    expect(mission.exercises.length).toBeGreaterThan(0)
+    expect(
+      mission.exercises.every(
+        (exercise) => exercise.equipment.includes('softBall') && exercise.categories.includes('feet'),
+      ),
+    ).toBe(true)
+  })
+
+  it('limits the requested exercise count to available equipment matches', () => {
+    const sensoryMatExercises = Object.values(exerciseLibrary).filter((exercise) =>
+      exercise.equipment.some((equipment) => equipment === 'sensoryMat'),
+    )
+    const options = normalizeCustomAdventureOptions({
+      equipment: ['sensoryMat'],
+      exerciseCount: 5,
+    })
+    const draft = generateCustomAdventureDraft(options, [], seededRandom(88))
+
+    expect(options.exerciseCount).toBe(Math.min(5, sensoryMatExercises.length))
+    expect(draft.exerciseIds).toHaveLength(options.exerciseCount)
+    draft.exerciseIds.forEach((exerciseId) => {
+      expect(exerciseLibrary[exerciseId].equipment.some((equipment) => equipment === 'sensoryMat')).toBe(true)
+    })
+  })
+
+  it('normalizes older saved options without equipment', () => {
+    const options = normalizeCustomAdventureOptions({
+      categories: ['feet'],
+      exerciseCount: 3,
+      minMinutes: 10,
+      maxMinutes: 15,
+    })
+
+    expect(options.equipment).toEqual([])
+    expect(options.categories).toEqual(['feet'])
   })
 
   it('uses standard adventure reward rules for generated adventures', () => {
